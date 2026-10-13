@@ -1,0 +1,18 @@
+# Copie para .dev.vars (nunca vai para o git). Valores só para desenvolvimento local.
+AMBIENTE=desenvolvimento
+ORIGENS=http://localhost:8787,http://127.0.0.1:8787
+TURNSTILE_HOSTS=localhost,127.0.0.1
+# Chave de teste da Cloudflare: o widget sempre passa.
+TURNSTILE_SITEKEY=1x00000000000000000000AA
+# "stub:" valida tokens localmente (formato teste.<cdata>), sem rede. Ignorado em produção.
+TURNSTILE_VERIFY_URL=stub:
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+SEGREDO_DISPOSITIVO=dev-dispositivo-troque-em-producao
+SEGREDO_DEDUP=dev-dedup-troque-em-producao
+SEGREDO_IP=dev-ip-troque-em-producao
+SEGREDO_ROTULOS=dev-rotulos-troque-em-producao
+SEGREDO_COMPROMISSO=dev-compromisso-troque-em-producao
+# Localmente não há request.cf: simula um acesso de São Paulo por uma operadora brasileira.
+GEO_FIXO={"country":"BR","regionCode":"SP","asn":28573,"asOrganization":"Claro","colo":"GRU","httpProtocol":"HTTP/2"}
+ABRE_EM=2026-10-01T00:00:00Z
+VOTACAO_ABERTA=true

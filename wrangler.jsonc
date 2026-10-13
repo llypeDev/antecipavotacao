@@ -1,0 +1,96 @@
+// Antecipa Votação — Worker (site estático + API /api/*).
+//
+// O NÍVEL DE CIMA É O STAGING: `npx wrangler deploy` sem parâmetros nunca chega à produção.
+// Produção: `npm run deploy:producao` (roda scripts/verificar-config.mjs antes).
+//
+// Segredos (wrangler secret put [--env production]): TURNSTILE_SECRET, SEGREDO_DISPOSITIVO,
+// SEGREDO_DEDUP, SEGREDO_IP, SEGREDO_ROTULOS, SEGREDO_COMPROMISSO.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "antecipavotacao-staging",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-10-13",
+  "workers_dev": true,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+    "not_found_handling": "404-page"
+  },
+  "observability": { "enabled": true, "logs": { "invocation_logs": false } },
+  "durable_objects": {
+    "bindings": [
+      { "name": "URNA", "class_name": "Urna" },
+      { "name": "TOTALIZADOR", "class_name": "Totalizador" },
+      { "name": "LIMITADOR", "class_name": "Limitador" }
+    ]
+  },
+  "exports": {
+    "Urna": { "type": "durable-object", "storage": "sqlite" },
+    "Totalizador": { "type": "durable-object", "storage": "sqlite" },
+    "Limitador": { "type": "durable-object", "storage": "sqlite" }
+  },
+  "ratelimits": [
+    { "name": "RL_VOTO", "namespace_id": "2601", "simple": { "limit": 30, "period": 60 } },
+    { "name": "RL_DISPOSITIVO", "namespace_id": "2602", "simple": { "limit": 30, "period": 60 } }
+  ],
+  "analytics_engine_datasets": [{ "binding": "METRICAS", "dataset": "antecipa_staging" }],
+  "r2_buckets": [{ "binding": "ARQUIVO", "bucket_name": "antecipavotacao-staging" }],
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "AMBIENTE": "staging",
+    "ABRE_EM": "2026-10-14T00:00:00Z",
+    "FECHA_EM": "2026-10-25T20:00:00Z",
+    "REVELAR_EM": "2026-10-25T20:00:00Z",
+    "VOTACAO_ABERTA": "true",
+    "COLETA_OPCAO": "true",
+    "MOSTRAR_UF": "false",
+    "ORIGENS": "https://antecipavotacao-staging.SUBDOMINIO.workers.dev",
+    "TURNSTILE_SITEKEY": "PREENCHER_SITEKEY_STAGING",
+    "TURNSTILE_HOSTS": "antecipavotacao-staging.SUBDOMINIO.workers.dev",
+    "LIMITES": "{\"v4Suave\":50,\"v4Duro\":2000,\"v6Suave\":3,\"v6Duro\":20}"
+  },
+  "env": {
+    "production": {
+      "name": "antecipavotacao",
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [{ "pattern": "antecipavotacao.com.br", "custom_domain": true }],
+      "durable_objects": {
+        "bindings": [
+          { "name": "URNA", "class_name": "Urna" },
+          { "name": "TOTALIZADOR", "class_name": "Totalizador" },
+          { "name": "LIMITADOR", "class_name": "Limitador" }
+        ]
+      },
+      "exports": {
+        "Urna": { "type": "durable-object", "storage": "sqlite" },
+        "Totalizador": { "type": "durable-object", "storage": "sqlite" },
+        "Limitador": { "type": "durable-object", "storage": "sqlite" }
+      },
+      "ratelimits": [
+        { "name": "RL_VOTO", "namespace_id": "2611", "simple": { "limit": 30, "period": 60 } },
+        { "name": "RL_DISPOSITIVO", "namespace_id": "2612", "simple": { "limit": 30, "period": 60 } }
+      ],
+      "analytics_engine_datasets": [{ "binding": "METRICAS", "dataset": "antecipa_producao" }],
+      "r2_buckets": [{ "binding": "ARQUIVO", "bucket_name": "antecipavotacao-arquivo" }],
+      "triggers": { "crons": ["* * * * *"] },
+      "vars": {
+        "AMBIENTE": "producao",
+        // ABRE_EM é definido no GO (sáb 17/10); até lá a votação fica fechada.
+        "ABRE_EM": "2026-10-18T12:00:00Z",
+        "FECHA_EM": "2026-10-25T20:00:00Z",
+        "REVELAR_EM": "2026-10-25T20:00:00Z",
+        "VOTACAO_ABERTA": "false",
+        // Modo B (só participação) até o parecer do advogado liberar o Modo A.
+        "COLETA_OPCAO": "false",
+        "MOSTRAR_UF": "false",
+        "ORIGENS": "https://antecipavotacao.com.br",
+        "TURNSTILE_SITEKEY": "PREENCHER_SITEKEY_PRODUCAO",
+        "TURNSTILE_HOSTS": "antecipavotacao.com.br",
+        "LIMITES": "{\"v4Suave\":50,\"v4Duro\":2000,\"v6Suave\":3,\"v6Duro\":20}"
+      }
+    }
+  }
+}

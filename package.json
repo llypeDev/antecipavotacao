@@ -1,0 +1,22 @@
+{
+  "name": "antecipavotacao",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "verificar-config": "node scripts/verificar-config.mjs",
+    "deploy:staging": "wrangler deploy",
+    "deploy:producao": "node scripts/verificar-config.mjs && wrangler deploy --env production",
+    "painel": "node scripts/painel.mjs",
+    "anomalias": "node scripts/anomalias.mjs"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.4.1",
+    "@cloudflare/workers-types": "5.20261013.1",
+    "typescript": "5.9.3",
+    "vitest": "5.0.4",
+    "wrangler": "4.150.0"
+  }
+}

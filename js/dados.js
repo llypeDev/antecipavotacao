@@ -25,6 +25,7 @@ window.DADOS_ELEICAO = {
       nomeCompleto: 'Luiz Inácio Lula da Silva',
       partido: 'PT',
       foto: 'img/candidatos/13-lula.jpg',
+      fotoRecorte: 'img/candidatos/13-lula-recorte.webp',   // votômetro: sem o fundo, sobre a cor do partido
       vice: {
         nome: 'GERALDO ALCKMIN',
         nomeCompleto: 'Geraldo José Rodrigues Alckmin Filho',
@@ -40,6 +41,7 @@ window.DADOS_ELEICAO = {
       nomeCompleto: 'Flávio Nantes Bolsonaro',
       partido: 'PL',
       foto: 'img/candidatos/22-flavio-bolsonaro.jpg',
+      fotoRecorte: 'img/candidatos/22-flavio-bolsonaro-recorte.webp',
       vice: {
         nome: 'ALFREDO GASPAR',
         nomeCompleto: 'Alfredo Gaspar de Mendonça Neto',

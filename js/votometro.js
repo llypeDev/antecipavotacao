@@ -101,12 +101,12 @@
     // manchete em ordem numérica, cada nome na cor do partido
     el.manchete.innerHTML = CAND.map(function (k) {
       return '<span style="color:var(--texto-' + k.numero + ');white-space:nowrap">' + esc(k.exibicao) + '</span>';
-    }).join(' e ') + ' no 2º turno';
+    }).join(' e ') + ' <span style="white-space:nowrap">no 2º turno</span>';
 
     el.duelo.innerHTML = CAND.map(function (k, i) {
-      return '<div class="vm-cand' + (i ? ' vm-cand-dir' : '') + '" data-chave="' + esc(k.numero) + '"' +
+      return '<div class="vm-cand' + (i ? ' vm-cand-dir' : '') + '" role="group" data-chave="' + esc(k.numero) + '"' +
         ' style="--cor:var(--cor-' + k.numero + ');--texto:var(--texto-' + k.numero + ')">' +
-        '<div class="vm-quem"><img src="' + esc(k.foto) + '" alt="">' +
+        '<div class="vm-quem"><span class="vm-av"><img src="' + esc(k.fotoRecorte || k.foto) + '" alt=""></span>' +
         '<div><b class="vm-nome">' + esc(k.exibicao) + '</b>' +
         '<span class="vm-partido">' + esc(k.partido) + ' ' + esc(k.numero) + '</span></div></div>' +
         '<p class="vm-pct"><span class="vm-pct-n">0,00</span><sup>%</sup></p>' +
@@ -126,8 +126,10 @@
 
   function animar(alvo, de, para, formato) {
     if (alvo._raf) cancelAnimationFrame(alvo._raf);
+    if (typeof alvo._valor === 'number') de = alvo._valor;   // continua de onde a tela está
     if (de === para || !window.requestAnimationFrame ||
         (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+      alvo._valor = para;
       alvo.textContent = formato(para);
       return;
     }
@@ -136,7 +138,8 @@
       if (inicio === null) inicio = t;
       var p = Math.min(1, (t - inicio) / DURACAO);
       p = 1 - Math.pow(1 - p, 3);
-      alvo.textContent = formato(de + (para - de) * p);
+      alvo._valor = de + (para - de) * p;
+      alvo.textContent = formato(alvo._valor);
       if (p < 1) alvo._raf = requestAnimationFrame(passo);
     }
     alvo._raf = requestAnimationFrame(passo);
@@ -161,6 +164,8 @@
     return { lo: lo, hi: hi, passo: passo };
   }
 
+  var larguraDesenhada = 0;
+
   function desenharGrafico(novoPonto) {
     var serie = contagem.serie;
     el.grafico.innerHTML = '';
@@ -169,22 +174,39 @@
       return;
     }
 
-    var W = 300, H = 176, ml = 34, mr = 10, mt = 8, mb = 22;
+    // o desenho acompanha a largura do cartão (rótulos sempre do mesmo tamanho)
+    larguraDesenhada = el.grafico.clientWidth;
+    var W = Math.max(240, larguraDesenhada || 300), H = 172, ml = 34, mr = 8, mt = 8, mb = 22;
     var pw = W - ml - mr, ph = H - mt - mb;
+
+    // eixo x pelo número do voto válido (continua proporcional depois de guardar menos pontos)
+    var tot = serie.map(function (p) { return p.reduce(function (s, v) { return s + v; }, 0); });
+    var t0 = tot[0], t1 = tot[tot.length - 1], ult = serie.length - 1;
     var linhas = CAND.map(function (k, i) {
-      return serie.map(function (p) { var t = p.reduce(function (s, v) { return s + v; }, 0); return pct(p[i], t); });
+      return serie.map(function (p, j) { return pct(p[i], tot[j]); });
     });
-    var todos = [].concat.apply([], linhas);
-    var f = faixa(Math.min.apply(null, todos), Math.max.apply(null, todos));
-    var x = function (i) { return ml + (serie.length > 1 ? (i / (serie.length - 1)) * pw : pw / 2); };
+
+    // como no seuimposto: o começo (poucos votos, 100% x 0%) fica tracejado e
+    // não entra na escala do eixo y
+    var limite = t1 >= 5 ? Math.min(10, Math.ceil(t1 / 4)) : 0;
+    var ini = 0;
+    while (ini < ult && tot[ini] < limite) ini++;
+    var firmes = [].concat.apply([], linhas.map(function (l) { return l.slice(ini); }));
+    var f = faixa(Math.min.apply(null, firmes), Math.max.apply(null, firmes));
+    var x = function (j) { return ml + (t1 > t0 ? ((tot[j] - t0) / (t1 - t0)) * pw : pw / 2); };
     var y = function (v) { return mt + ph - ((v - f.lo) / (f.hi - f.lo)) * ph; };
 
-    var ultimo = linhas.map(function (l) { return l[l.length - 1]; });
+    var nv = validos(contagem);
     var raiz = svg('svg', {
-      viewBox: '0 0 ' + W + ' ' + H, role: 'img',
-      'aria-label': CAND.map(function (k, i) { return k.exibicao + ' ' + PCT.format(ultimo[i]) + '%'; }).join(' e ') +
-        ' dos votos válidos, depois de ' + votos(validos(contagem)) + ' válidos simulados neste aparelho'
+      viewBox: '0 0 ' + W + ' ' + H, width: W, height: H, role: 'img',
+      'aria-label': CAND.map(function (k, i) { return k.exibicao + ' ' + PCT.format(linhas[i][ult]) + '%'; }).join(' e ') +
+        ' dos votos válidos, depois de ' + NUM.format(nv) +
+        (nv === 1 ? ' voto válido simulado' : ' votos válidos simulados') + ' neste aparelho'
     });
+
+    var defs = raiz.appendChild(svg('defs'));
+    var corte = defs.appendChild(svg('clipPath', { id: 'vm-corte' }));
+    corte.appendChild(svg('rect', { x: ml - 4, y: mt - 4, width: pw + 8, height: ph + 8 }));
 
     var grade = svg('g', { class: 'vm-grade' });
     for (var v = f.lo; v <= f.hi + 1e-9; v += f.passo) {
@@ -196,29 +218,52 @@
     raiz.appendChild(grade);
 
     var eixo = svg('g', { class: 'vm-eixo' });
-    var n = validos(contagem);
-    [[ml, 'start', '1º voto'], [W - mr, 'end', NUM.format(n) + (n === 1 ? ' voto válido' : ' votos válidos')]]
+    [[ml, 'start', NUM.format(Math.max(1, t0)) + 'º voto'],
+     [W - mr, 'end', NUM.format(nv) + (nv === 1 ? ' voto válido' : ' votos válidos')]]
       .forEach(function (a) {
-        var t = svg('text', { x: a[0], y: H - 6, 'text-anchor': a[1] });
+        var t = svg('text', { x: a[0], y: H - 4, 'text-anchor': a[1] });
         t.textContent = a[2];
         eixo.appendChild(t);
       });
     raiz.appendChild(eixo);
 
+    var tracos = svg('g', { 'clip-path': 'url(#vm-corte)' });
     CAND.forEach(function (k, i) {
-      var cor = 'var(--cor-' + k.numero + ')';
-      var d = linhas[i].map(function (val, j) { return (j ? 'L' : 'M') + x(j).toFixed(1) + ' ' + y(val).toFixed(1); }).join('');
-      if (serie.length > 1) {
-        raiz.appendChild(svg('path', { d: d, class: 'vm-linha', style: 'stroke:' + cor }));
-      }
-      var j = serie.length - 1;
-      raiz.appendChild(svg('circle', {
-        cx: x(j), cy: y(linhas[i][j]), r: 3.6,
-        class: 'vm-ponto' + (novoPonto ? ' vm-ponto-novo' : ''), style: 'fill:' + cor
-      }));
+      var cor = 'stroke:var(--cor-' + k.numero + ')';
+      var caminho = function (a, b) {
+        return linhas[i].slice(a, b).map(function (val, j) {
+          return (j ? 'L' : 'M') + x(a + j).toFixed(1) + ' ' + y(val).toFixed(1);
+        }).join('');
+      };
+      if (ini > 0) tracos.appendChild(svg('path', { d: caminho(0, ini + 1), class: 'vm-inicio', style: cor }));
+      if (ult - ini > 0) tracos.appendChild(svg('path', { d: caminho(ini), class: 'vm-linha', style: cor }));
+    });
+    raiz.appendChild(tracos);
+
+    // pontos finais por cima das linhas; em empate, metade de cada cor
+    var r = 3.5, cy = linhas.map(function (l) { return y(l[ult]); });
+    var juntos = Math.abs(cy[0] - cy[1]) < 2 * r;
+    if (juntos) {
+      var metade = defs.appendChild(svg('clipPath', { id: 'vm-metade', clipPathUnits: 'objectBoundingBox' }));
+      metade.appendChild(svg('rect', { width: .5, height: 1 }));
+    }
+    CAND.slice().reverse().forEach(function (k) {
+      var i = CAND.indexOf(k);
+      var c = svg('circle', {
+        cx: x(ult), cy: cy[i], r: r,
+        class: 'vm-ponto' + (novoPonto ? ' vm-ponto-novo' : ''), style: 'fill:var(--cor-' + k.numero + ')'
+      });
+      if (juntos && i === 0) c.setAttribute('clip-path', 'url(#vm-metade)');
+      raiz.appendChild(c);
     });
 
     el.grafico.appendChild(raiz);
+  }
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (el.grafico.clientWidth !== larguraDesenhada && contagem.serie.length) desenharGrafico(false);
+    }).observe(el.grafico);
   }
 
   /* ---------- atualização ---------- */
@@ -247,7 +292,8 @@
     if (!v) el.dif.textContent = '—';
     else if (contagem[CAND[0].numero] === contagem[CAND[1].numero]) el.dif.textContent = 'Empate';
     else {
-      var pontos = Math.abs(p[0] - p[1]);
+      var r2 = function (n) { return Math.round(n * 100) / 100; };
+      var pontos = Math.abs(r2(p[0]) - r2(p[1]));
       var dv = Math.abs(contagem[CAND[0].numero] - contagem[CAND[1].numero]);
       el.dif.textContent = PCT.format(pontos) + ' pontos · ' + votos(dv);
     }
@@ -296,7 +342,8 @@
       contagem[chave] += 1;
       if (voto.tipo === 'nominal') {
         contagem.serie.push(CAND.map(function (k) { return contagem[k.numero]; }));
-        // muitos votos: guarda um ponto sim, outro não (mantém o formato da curva)
+        // muitos votos: guarda um ponto sim, outro não (o eixo x usa o número do voto,
+        // então a curva mantém o formato)
         if (contagem.serie.length > MAX_PONTOS) {
           var ult = contagem.serie[contagem.serie.length - 1];
           contagem.serie = contagem.serie.filter(function (_, i) { return i % 2 === 0; });

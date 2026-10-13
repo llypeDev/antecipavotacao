@@ -4,44 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Simulador de Votação · Presidente 2º turno 2026 · Urna Eletrônica</title>
-  <meta name="description" content="Simulador não oficial da urna eletrônica para o 2º turno da eleição para Presidente (25/10/2026): treine seu voto na cabina de votação, com os sons da urna.">
+  <meta name="description" content="Simulador não oficial da urna eletrônica para o 2º turno da eleição para Presidente (25/10/2026): treine seu voto na urna, numa seção eleitoral, com os sons da urna.">
   <meta name="theme-color" content="#3a2a1b">
   <meta property="og:title" content="Simulador de Votação · Presidente 2º turno 2026">
   <meta property="og:description" content="Treine seu voto para Presidente na urna eletrônica antes de ir à seção eleitoral.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='16' width='60' height='32' rx='3' fill='%23dcd6ca'/%3E%3Crect x='6' y='21' width='34' height='21' fill='%23fff' stroke='%239d978d'/%3E%3Crect x='43' y='19' width='16' height='6' fill='%23f4ede7'/%3E%3Crect x='43' y='25' width='16' height='20' fill='%233a3434'/%3E%3Crect x='44' y='40' width='4' height='3' fill='%23faf7f6'/%3E%3Crect x='49' y='40' width='4' height='3' fill='%23e69855'/%3E%3Crect x='54' y='39' width='4' height='4' fill='%234dcd86'/%3E%3C/svg%3E">
   <link rel="preload" href="img/urna.webp" as="image" type="image/webp">
+  <link rel="preload" href="img/sala.webp" as="image" type="image/webp">
   <link rel="preload" href="som/urna-confirma.mp3" as="audio" type="audio/mpeg">
   <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
 
-  <!-- Cenário: a sala de votação vista de dentro da cabina de papelão -->
-  <div class="cenario" aria-hidden="true">
-    <div class="sala">
-      <div class="sala-quadro"></div>
-      <div class="sala-relogio"><i></i><i></i></div>
-    </div>
-
-    <div class="cabina">
-      <div class="cab cab-fundo">
-        <div class="cab-impressao">
-          <img data-brasao alt="">
-          <span>JUSTIÇA ELEITORAL</span>
-        </div>
-        <div class="cab-rabisco">votei!</div>
-      </div>
-      <div class="cab cab-esq"></div>
-      <div class="cab cab-dir"></div>
-      <div class="cab cab-borda cab-borda-esq"></div>
-      <div class="cab cab-borda cab-borda-dir"></div>
-      <div class="cab cab-borda cab-borda-fundo"></div>
-      <div class="cab mesa"></div>
-      <div class="aviso-celular">
-        <strong>Atenção, eleitor!</strong>
-        É proibido usar celular, máquina fotográfica ou filmadora na cabina de votação.
-      </div>
-    </div>
-  </div>
+  <!-- Cenário: sala de aula usada como seção eleitoral, com a fila de eleitores -->
+  <div class="cena" aria-hidden="true"></div>
 
   <div class="layout">
     <header class="etiqueta">
@@ -52,16 +28,11 @@
     </header>
 
     <main class="palco">
-      <div class="urna" id="urna">
-        <!-- A urna é a foto real (img/urna.webp); a tela e as teclas ficam por cima -->
-        <div class="urna-parte urna-parte-tela">
+      <div class="mesa-urna">
+        <div class="urna" id="urna">
+          <!-- A urna é a foto real (img/urna.webp); a tela e as teclas ficam por cima -->
           <div class="urna-palco">
             <div class="tela" id="tela"></div>
-          </div>
-        </div>
-
-        <div class="urna-parte urna-parte-teclado">
-          <div class="urna-palco">
             <button type="button" class="tecla" data-tecla="1" aria-label="1"><span class="tecla-face"></span></button>
             <button type="button" class="tecla" data-tecla="2" aria-label="2"><span class="tecla-face"></span></button>
             <button type="button" class="tecla" data-tecla="3" aria-label="3"><span class="tecla-face"></span></button>
@@ -78,6 +49,7 @@
           </div>
         </div>
       </div>
+      <p class="dica-girar">Dica: gire o celular para ver a urna maior.</p>
     </main>
 
     <footer class="barra">
@@ -136,7 +108,6 @@
   <div id="anuncio" class="sr-only" aria-live="polite"></div>
 
   <script src="js/dados.js"></script>
-  <script src="js/graficos.js"></script>
   <script src="js/som.js"></script>
   <script src="js/urna.js"></script>
 </body>

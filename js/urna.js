@@ -8,7 +8,6 @@
 
   var D = window.DADOS_ELEICAO;
   var Som = window.SomUrna;
-  var G = window.GraficosUrna;
   var CARGO = D.cargo;
 
   var $ = function (sel) { return document.querySelector(sel); };
@@ -261,22 +260,15 @@
 
   /* ---------- escala da foto da urna ---------- */
 
-  // Cada parte mostra uma janela da foto; a escala é largura exibida / largura da janela
-  var partes = document.querySelectorAll('.urna-parte');
+  // Tudo sobre a foto usa as coordenadas dela (1480 px de largura)
+  var urna = $('#urna');
 
   function ajustarEscala() {
-    Array.prototype.forEach.call(partes, function (parte) {
-      var jw = parseFloat(getComputedStyle(parte).getPropertyValue('--jw'));
-      if (jw > 0) parte.style.setProperty('--s', String(parte.clientWidth / jw));
-    });
+    urna.style.setProperty('--s', String(urna.clientWidth / 1480));
   }
 
-  if (window.ResizeObserver) {
-    var ro = new ResizeObserver(ajustarEscala);
-    Array.prototype.forEach.call(partes, function (p) { ro.observe(p); });
-  } else {
-    window.addEventListener('resize', ajustarEscala);
-  }
+  if (window.ResizeObserver) new ResizeObserver(ajustarEscala).observe(urna);
+  else window.addEventListener('resize', ajustarEscala);
   ajustarEscala();
 
   /* ---------- eventos ---------- */
@@ -337,10 +329,6 @@
     atualizarBotaoSom();
     if (Som.ligado) { Som.preparar(); Som.tecla(); }
   });
-
-  // Brasão impresso na parede da cabina
-  var brasao = G.brasaoUri();
-  document.querySelectorAll('img[data-brasao]').forEach(function (img) { img.src = brasao; });
 
   atualizarBotaoSom();
   iniciar();

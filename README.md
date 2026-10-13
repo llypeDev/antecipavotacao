@@ -1,8 +1,8 @@
 # Simulador de Votação · Presidente · 2º turno 2026
 
 Simulador **não oficial** da urna eletrônica brasileira para treinar o voto do **2º turno da eleição para
-Presidente da República (25 de outubro de 2026)**. A página mostra a urna como se você estivesse dentro da
-cabina de votação de papelão.
+Presidente da República (25 de outubro de 2026)**. A urna fica sobre uma mesa numa sala de aula usada como
+seção eleitoral, com a fila de eleitores esperando e os mesários ao fundo.
 
 ## O que tem
 
@@ -21,7 +21,10 @@ cabina de votação de papelão.
 - **Sons**: clique das teclas e o "tirirí" do fim da votação (`som/urna-confirma.mp3`). Se o arquivo não
   tocar, o mesmo som é sintetizado (tom alternando 2204 Hz e 2307 Hz).
 - **Colinha** com os dois candidatos e **resumo** do voto no final da simulação.
-- Funciona no computador e no celular (em pé, a tela e o teclado aparecem um embaixo do outro).
+- **Cenário**: sala de aula de escola pública (quadro-negro com "Eleições 2026 · 2º turno", janelas, mural,
+  porta com o número da seção), fila de eleitores e mesa receptora, com desfoque de profundidade.
+- Funciona no computador e no celular; a urna aparece sempre inteira (no celular em pé ela ocupa a largura da
+  tela, e deitado fica maior).
 - Teclado físico: números, <kbd>Enter</kbd> = CONFIRMA, <kbd>Backspace</kbd>/<kbd>Esc</kbd> = CORRIGE, <kbd>B</kbd> = BRANCO.
 
 ## Como rodar
@@ -45,13 +48,14 @@ Também dá para abrir o `index.html` direto no navegador.
 ## Estrutura
 
 ```
-index.html          página (cabina + urna + colinha)
-css/estilo.css      cabina de papelão, urna e telas
+index.html          página (cenário + urna + colinha)
+css/estilo.css      cenário, urna e telas
 js/dados.js         candidatos do 2º turno (edite aqui)
 js/urna.js          lógica da votação, telas e teclado
 js/som.js           sons da urna
-js/graficos.js      brasão impresso na parede da cabina
 img/urna.webp       foto da urna (com a tela limpa)
+img/sala.webp       cenário: sala de aula com a fila de eleitores
+ferramentas/        gerador do cenário (gerar_sala.py)
 img/candidatos/     fotos oficiais dos candidatos
 som/                som do fim da votação
 fontes/             Liberation Sans (mesmas medidas do Arial usado na tela da urna)
@@ -67,6 +71,7 @@ As posições e os tamanhos dos textos foram medidos sobre fotos da urna real.
 ## Créditos
 
 - Foto da urna e referências das telas: imagens fornecidas pelo autor do projeto.
+- Cenário: ilustração criada para este projeto (`ferramentas/gerar_sala.py`).
 - Fotos dos candidatos: divulgação oficial do TSE (DivulgaCandContas), obtidas via
   [minhacolinha.com](https://minhacolinha.com/simulador).
 - Som do fim da votação e timbre do clique das teclas: [minhacolinha.com](https://minhacolinha.com/simulador).

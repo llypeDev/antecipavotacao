@@ -63,6 +63,8 @@ body {
   min-height: 100svh;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  overflow: clip; /* corta o tampo da mesa na borda da tela */
 }
 
 /* etiqueta de papel no topo da página */
@@ -273,7 +275,8 @@ body {
   padding: 1.5vh 2vw 1.6vh;
 }
 
-/* mesa onde a urna fica apoiada */
+/* mesa onde a urna fica apoiada: o tampo é visto de frente, em perspectiva, e
+   continua até a borda de baixo da tela (quem vota está de pé diante da mesa) */
 .mesa-urna {
   position: relative;
   padding: 0 0 2.2vh;
@@ -282,15 +285,12 @@ body {
 .mesa-urna::before {
   content: "";
   position: absolute;
-  left: -9%;
-  right: -9%;
-  bottom: 0;
-  height: 34%;
-  clip-path: polygon(5% 0, 95% 0, 100% 78%, 100% 100%, 0 100%, 0 78%);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, .18) 0%, rgba(255, 255, 255, 0) 30%),
-    linear-gradient(180deg, #c8a479 0%, #b78f63 72%, #8a6440 78%, #7a5636 100%);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, .3);
+  top: 62%;            /* borda de trás do tampo, escondida atrás da urna */
+  left: -60%;
+  right: -60%;
+  aspect-ratio: 220 / 120;
+  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 120' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='t' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23d6b487'/%3E%3Cstop offset='.04' stop-color='%23c8a06f'/%3E%3Cstop offset='.4' stop-color='%23ab8155'/%3E%3Cstop offset='1' stop-color='%2383603b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='46,0 174,0 220,120 0,120' fill='url(%23t)'/%3E%3Cg stroke='%235a3a1c' stroke-opacity='.07' stroke-width='.14'%3E%3Cline x1='54.00' y1='0' x2='13.75' y2='120'/%3E%3Cline x1='62.00' y1='0' x2='27.50' y2='120'/%3E%3Cline x1='70.00' y1='0' x2='41.25' y2='120'/%3E%3Cline x1='78.00' y1='0' x2='55.00' y2='120'/%3E%3Cline x1='86.00' y1='0' x2='68.75' y2='120'/%3E%3Cline x1='94.00' y1='0' x2='82.50' y2='120'/%3E%3Cline x1='102.00' y1='0' x2='96.25' y2='120'/%3E%3Cline x1='110.00' y1='0' x2='110.00' y2='120'/%3E%3Cline x1='118.00' y1='0' x2='123.75' y2='120'/%3E%3Cline x1='126.00' y1='0' x2='137.50' y2='120'/%3E%3Cline x1='134.00' y1='0' x2='151.25' y2='120'/%3E%3Cline x1='142.00' y1='0' x2='165.00' y2='120'/%3E%3Cline x1='150.00' y1='0' x2='178.75' y2='120'/%3E%3Cline x1='158.00' y1='0' x2='192.50' y2='120'/%3E%3Cline x1='166.00' y1='0' x2='206.25' y2='120'/%3E%3C/g%3E%3Cline x1='46.6' y1='.45' x2='173.4' y2='.45' stroke='%23fff4e0' stroke-opacity='.5' stroke-width='.3'/%3E%3Cpolyline points='0,120 46,.12 174,.12 220,120' fill='none' stroke='%236a4728' stroke-width='.3' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
 
 .mesa-urna .urna { z-index: 1; }
@@ -299,6 +299,8 @@ body {
 
 /* barra de botões (papéis em cima da mesa) */
 .barra {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -411,13 +413,16 @@ body {
 .urna::after {
   content: "";
   position: absolute;
-  left: 2%;
-  right: 0;
-  bottom: -1.2%;
-  height: 9%;
+  left: 1.2%;
+  right: 1%;
+  bottom: .5%;
+  height: 2.6%;
   z-index: -1;
-  background: radial-gradient(ellipse at 50% 35%, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0) 70%);
-  filter: blur(6px);
+  border-radius: 50%;
+  /* contato com o tampo + sombra suave espalhada para a frente (escala com a urna) */
+  background: rgba(34, 20, 8, .6);
+  box-shadow: 0 calc(16px * var(--s, .5)) calc(46px * var(--s, .5)) calc(14px * var(--s, .5)) rgba(44, 26, 10, .38);
+  filter: blur(calc(5px * var(--s, .5)));
 }
 
 .urna-palco {
@@ -878,9 +883,9 @@ dialog.folha::backdrop {
 
   .palco { container-type: normal; min-height: 0; }
   .urna { width: 96vw; }
-  .mesa-urna::before { left: -2%; right: -2%; }
-
   .dica-girar {
+    position: relative;
+    z-index: 2;
     display: block;
     margin: 10px 0 0;
     padding: 4px 10px;

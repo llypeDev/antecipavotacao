@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Simulador de Votação 2026 · Urna Eletrônica</title>
+  <meta name="description" content="Simulador não oficial da urna eletrônica das Eleições 2026: treine seu voto na cabina de votação, com os sons da urna.">
+  <meta name="theme-color" content="#3a2a1b">
+  <meta property="og:title" content="Simulador de Votação 2026 · Urna Eletrônica">
+  <meta property="og:description" content="Treine seu voto na urna eletrônica antes de ir à seção eleitoral.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='14' width='60' height='36' rx='5' fill='%23d6d1c4'/%3E%3Crect x='7' y='19' width='30' height='26' rx='2' fill='%23111'/%3E%3Crect x='9' y='21' width='26' height='22' fill='%23f6f6f1'/%3E%3Crect x='41' y='19' width='17' height='26' rx='2' fill='%232b2c2e'/%3E%3Crect x='43' y='38' width='4' height='4' fill='%23eee'/%3E%3Crect x='48' y='38' width='4' height='4' fill='%23f08c1f'/%3E%3Crect x='53' y='37' width='4' height='6' fill='%232aa046'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+  <!-- Cenário: a sala de votação vista de dentro da cabina de papelão -->
+  <div class="cenario" aria-hidden="true">
+    <div class="sala">
+      <div class="sala-quadro"></div>
+      <div class="sala-relogio"><i></i><i></i></div>
+    </div>
+
+    <div class="cabina">
+      <div class="cab cab-fundo">
+        <div class="cab-impressao">
+          <img data-brasao alt="">
+          <span>JUSTIÇA ELEITORAL</span>
+        </div>
+        <div class="cab-rabisco">votei!</div>
+      </div>
+      <div class="cab cab-esq"></div>
+      <div class="cab cab-dir"></div>
+      <div class="cab cab-borda cab-borda-esq"></div>
+      <div class="cab cab-borda cab-borda-dir"></div>
+      <div class="cab cab-borda cab-borda-fundo"></div>
+      <div class="cab mesa"></div>
+      <div class="aviso-celular">
+        <strong>Atenção, eleitor!</strong>
+        É proibido usar celular, máquina fotográfica ou filmadora na cabina de votação.
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <header class="etiqueta">
+      <div class="etiqueta-papel">
+        <h1>Simulador de Votação <span>Eleições 2026</span></h1>
+        <p id="data-turno" class="etiqueta-data">1º turno · 4 de outubro de 2026</p>
+        <div class="turnos" role="group" aria-label="Escolher turno">
+          <button type="button" data-turno="1" aria-pressed="true">1º turno</button>
+          <button type="button" data-turno="2" aria-pressed="false">2º turno</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="palco">
+      <div class="urna" id="urna">
+        <div class="urna-corpo">
+          <div class="urna-moldura">
+            <div class="tela" id="tela"></div>
+          </div>
+
+          <div class="urna-placa">
+            <div class="teclado">
+              <div class="teclado-topo">
+                <img data-brasao alt="">
+                <span>JUSTIÇA<br>ELEITORAL</span>
+              </div>
+
+              <div class="teclas-num">
+                <button type="button" class="tecla tecla-num" data-tecla="1" aria-label="1"><span class="digito">1</span><span class="braille">⠁</span></button>
+                <button type="button" class="tecla tecla-num" data-tecla="2" aria-label="2"><span class="digito">2</span><span class="braille">⠃</span></button>
+                <button type="button" class="tecla tecla-num" data-tecla="3" aria-label="3"><span class="digito">3</span><span class="braille">⠉</span></button>
+                <button type="button" class="tecla tecla-num" data-tecla="4" aria-label="4"><span class="digito">4</span><span class="braille">⠙</span></button>
+                <button type="button" class="tecla tecla-num" data-tecla="5" aria-label="5"><span class="digito">5</span><span class="braille">⠑</span></button>
+                <button type="button" class="tecla tecla-num" data-tecla="6" aria-label="6"><span class="digito">6</span><span class="braille">⠋</span></button>
+                <button type="button" class="tecla tecla-num" data-tecla="7" aria-label="7"><span class="digito">7</span><span class="braille">⠛</span></button>
+                <button type="button" class="tecla tecla-num" data-tecla="8" aria-label="8"><span class="digito">8</span><span class="braille">⠓</span></button>
+                <button type="button" class="tecla tecla-num" data-tecla="9" aria-label="9"><span class="digito">9</span><span class="braille">⠊</span></button>
+                <button type="button" class="tecla tecla-num tecla-zero" data-tecla="0" aria-label="0"><span class="digito">0</span><span class="braille">⠚</span></button>
+              </div>
+
+              <div class="teclas-acao">
+                <button type="button" class="tecla tecla-branco" data-tecla="branco">BRANCO</button>
+                <button type="button" class="tecla tecla-corrige" data-tecla="corrige">CORRIGE</button>
+                <button type="button" class="tecla tecla-confirma" data-tecla="confirma">CONFIRMA</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="barra">
+      <div class="barra-botoes">
+        <button type="button" class="papel" id="btn-cola">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 11h7M9 14.5h7M9 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Cola de candidatos
+        </button>
+        <button type="button" class="papel papel-destaque" id="btn-nova" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95M19 4v4h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Votar de novo
+        </button>
+        <button type="button" class="papel" id="btn-resumo" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Ver meus votos
+        </button>
+        <button type="button" class="papel" id="btn-som" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="currentColor"/><path class="onda" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="rotulo-som">Som ligado</span>
+        </button>
+      </div>
+      <p class="aviso-legal">Simulador <strong>não oficial</strong>, sem vínculo com o TSE. Candidatos e partidos fictícios. <span class="so-teclado">Teclado: números, <kbd>Enter</kbd> confirma, <kbd>Backspace</kbd> corrige, <kbd>B</kbd> branco.</span></p>
+    </footer>
+  </div>
+
+  <dialog id="dlg-cola" class="folha" aria-labelledby="titulo-cola">
+    <div class="folha-papel">
+      <header class="folha-topo">
+        <h2 id="titulo-cola">Colinha eleitoral</h2>
+        <button type="button" class="folha-fechar" data-fechar aria-label="Fechar">×</button>
+      </header>
+      <div id="cola-conteudo" class="folha-conteudo"></div>
+      <div class="folha-dicas">
+        <strong>Como votar:</strong> digite o número, confira foto, nome e partido e aperte
+        <span class="mini mini-confirma">CONFIRMA</span>. Errou? Aperte <span class="mini mini-corrige">CORRIGE</span>.
+        Para votar em branco, com o campo vazio, aperte <span class="mini mini-branco">BRANCO</span>.
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlg-resumo" class="folha" aria-labelledby="titulo-resumo">
+    <div class="folha-papel">
+      <header class="folha-topo">
+        <h2 id="titulo-resumo">Seus votos nesta simulação</h2>
+        <button type="button" class="folha-fechar" data-fechar aria-label="Fechar">×</button>
+      </header>
+      <div id="resumo-conteudo" class="folha-conteudo"></div>
+      <p class="folha-nota">Na urna de verdade o voto é secreto: nenhum comprovante com os seus votos é impresso ou exibido.</p>
+      <div class="folha-acoes">
+        <button type="button" class="papel papel-destaque" data-nova>Votar de novo</button>
+        <button type="button" class="papel" data-fechar>Fechar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="anuncio" class="sr-only" aria-live="polite"></div>
+
+  <script src="js/dados.js"></script>
+  <script src="js/graficos.js"></script>
+  <script src="js/som.js"></script>
+  <script src="js/urna.js"></script>
+</body>
+</html>

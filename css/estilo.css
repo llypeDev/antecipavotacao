@@ -387,424 +387,227 @@ body {
 }
 
 /* =========================================================
-   Urna eletrônica (modelo UE2020, vista de frente)
-   Proporções medidas a partir de fotos e do simulador do TSE.
-   Unidades em cqw: % da largura da urna, do terminal ou da tela.
+   Urna eletrônica
+   A urna é a foto real (img/urna.webp, 1480x684, tela já limpa).
+   Tudo dentro de .urna-palco usa as coordenadas da foto em px e é
+   escalado por JS (--s). A tela é desenhada numa área lógica de
+   840x400 px e projetada sobre o vidro com a mesma perspectiva da foto.
    ========================================================= */
 
-.urna {
-  --corpo: #dcd6ca;
-  container-type: inline-size;
-  position: relative;
-  width: 94vw;
-  width: min(94vw, calc((100vh - 200px) / .647), 1100px);
-  width: min(94vw, calc((100svh - 200px) / .647), 1100px);
+@font-face {
+  font-family: "Urna Sans";
+  font-weight: 400;
+  font-display: swap;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"),
+    url("../fontes/LiberationSans-Regular.woff2") format("woff2");
 }
 
-/* sombra projetada na mesa */
+@font-face {
+  font-family: "Urna Sans";
+  font-weight: 700;
+  font-display: swap;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("LiberationSans-Bold"),
+    url("../fontes/LiberationSans-Bold.woff2") format("woff2");
+}
+
+.urna {
+  position: relative;
+  width: 90vw;
+  width: min(90vw, calc((100vh - 190px) * 2.164), 1250px);
+  width: min(90vw, calc((100svh - 190px) * 2.164), 1250px);
+  aspect-ratio: 1480 / 684;
+}
+
+/* sombra da urna na mesa */
 .urna::after {
   content: "";
   position: absolute;
-  left: 1%;
-  right: 1%;
-  bottom: -2cqw;
-  height: 6cqw;
+  left: 2%;
+  right: 0;
+  bottom: -1.2%;
+  height: 9%;
   z-index: -1;
-  background: radial-gradient(ellipse at 50% 40%, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0) 70%);
+  background: radial-gradient(ellipse at 50% 35%, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0) 70%);
   filter: blur(6px);
 }
 
-/* parte traseira, mais alta e estreita */
-.urna-traseira {
-  height: 12cqw;
-  margin: 0 3.1cqw 0 3.3cqw;
-  clip-path: polygon(7.5% 0, 92.5% 0, 100% 100%, 0 100%);
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, .06) 0%, rgba(0, 0, 0, 0) 12%, rgba(0, 0, 0, 0) 88%, rgba(0, 0, 0, .1) 100%),
-    linear-gradient(180deg, #e9e5dc 0%, #e0dbd0 8%, #d9d4c7 70%, #cfc9ba 100%);
-}
-
-.urna-frente {
-  position: relative;
-  height: 52.7cqw;
-  clip-path: polygon(3.3% 0, 96.9% 0, 100% 13.5%, 100% 100%, 0 100%, 0 13.5%);
-  background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0) 97.4%, #c9c2b0 97.6%, #c3bca9 100%),
-    linear-gradient(180deg, #d1ccb9 0%, #d6d0c0 7.8cqw, #e4ded2 8.1cqw, #ddd7cb 8.6cqw, #dcd6ca 30cqw, #d5cfc0 100%);
-}
-
-/* moldura e tela */
-.urna-tela-moldura {
+/* Cada parte mostra uma "janela" (--jx, --jy, --jw, --jh) da foto */
+.urna-parte {
   position: absolute;
-  left: 3.9cqw;
-  top: 12.8cqw;
-  width: 58.2cqw;
-  border: .14cqw solid #9a948a;
-  box-shadow: 0 0 0 .12cqw #e6e1d7, inset 0 .1cqw .3cqw rgba(0, 0, 0, .12);
-  background: #fff;
-}
-
-.tela {
-  container-type: inline-size;
-  position: relative;
-  aspect-ratio: 492 / 288;
+  top: 0;
   overflow: hidden;
-  background: #fff;
-  color: #000;
-  font-family: var(--fonte-urna);
-  user-select: none;
-  -webkit-user-select: none;
+  aspect-ratio: var(--jw) / var(--jh);
 }
 
-/* terminal: rótulo + teclado */
-.urna-terminal {
-  container-type: inline-size;
-  position: absolute;
-  left: 65.7cqw;
-  top: 8.4cqw;
-  width: 30.6cqw;
-  box-shadow: 0 0 0 .15cqw rgba(110, 104, 94, .35);
+.urna-parte-tela {
+  --jx: 0;
+  --jy: 0;
+  --jw: 894;
+  --jh: 684;
+  left: 0;
+  width: calc(894 / 1480 * 100%);
 }
 
-.urna-rotulo {
-  display: flex;
-  align-items: center;
-  height: 27.4cqw;
-  padding: 0 4cqw 0 2.7cqw;
-  background: linear-gradient(180deg, #f7f1eb 0%, #f2ebe6 100%);
-  color: #3a3837;
+.urna-parte-teclado {
+  --jx: 890;
+  --jy: 0;
+  --jw: 590;
+  --jh: 684;
+  left: calc(890 / 1480 * 100%);
+  width: calc(590 / 1480 * 100%);
 }
 
-.urna-rotulo img {
-  flex: none;
-  width: 22cqw;
-  height: 22.8cqw;
-  filter: grayscale(1) contrast(.85) brightness(1.18);
-  opacity: .75;
-}
-
-.urna-rotulo span {
-  flex: 1;
-  padding-left: 5cqw;
-  text-align: center;
-  font: 700 8.4cqw/1.12 var(--fonte-urna);
-  letter-spacing: .02em;
-}
-
-.urna-teclado {
-  position: relative;
-  height: 107.7cqw;
-  background: linear-gradient(180deg, #312c2c 0%, #2c2727 100%);
-  box-shadow: inset 0 .6cqw 1cqw rgba(0, 0, 0, .35);
-}
-
-/* pés / encaixes na base */
-.urna-pes {
+.urna-palco {
   position: absolute;
   left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2.1cqw;
+  top: 0;
+  width: 1480px;
+  height: 684px;
+  background: url("../img/urna.webp") 0 0 / 1480px 684px no-repeat;
+  transform-origin: 0 0;
+  transform: scale(var(--s, .5)) translate(calc(var(--jx) * -1px), calc(var(--jy) * -1px));
 }
 
-.urna-pes i {
-  position: absolute;
-  bottom: 0;
-  width: .45cqw;
-  height: 1.9cqw;
-  border-radius: .1cqw;
-  background: #4d4545;
-}
-
-.urna-pes i:nth-child(1) { left: 7.1%; }
-.urna-pes i:nth-child(2) { left: 16.5%; }
-.urna-pes i:nth-child(3) { left: 26%; }
-.urna-pes i:nth-child(4) { left: 35.5%; }
-.urna-pes i:nth-child(5) { left: 44.9%; }
-.urna-pes i:nth-child(6) { left: 54.4%; }
-.urna-pes i:nth-child(7) { left: 63.8%; }
-.urna-pes i:nth-child(8) { left: 73.6%; }
-.urna-pes i:nth-child(9) { left: 83.1%; }
-.urna-pes i:nth-child(10) { left: 93%; }
-
-/* ---------- teclas ---------- */
+/* ---------- teclas (áreas clicáveis sobre a foto) ---------- */
 
 .tecla {
-  --lado: 1.1cqw;
-  --cor-lado: #0f0d0d;
-  appearance: none;
   position: absolute;
+  left: calc(var(--x) * 1px);
+  top: calc(var(--y) * 1px);
+  width: calc(var(--w) * 1px);
+  height: calc(var(--h) * 1px);
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: 1.2cqw;
-  font-family: var(--fonte-urna);
+  border-radius: 9px;
+  background: #151515;
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
-  box-shadow:
-    inset 0 0 0 .2cqw rgba(255, 255, 255, .07),
-    inset 0 .35cqw 0 rgba(255, 255, 255, .09),
-    inset 0 -.35cqw 0 rgba(0, 0, 0, .3),
-    0 var(--lado) 0 var(--cor-lado),
-    0 calc(var(--lado) + .6cqw) 1.4cqw rgba(0, 0, 0, .6);
-  transition: transform .05s, box-shadow .05s;
 }
 
-.tecla:active,
-.tecla.pressionada {
-  --lado: .2cqw;
-  transform: translateY(.7cqw);
+/* o "pedaço" da foto com a tecla, que afunda ao ser pressionado */
+.tecla-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  background: url("../img/urna.webp") no-repeat;
+  background-size: 1480px 684px;
+  background-position: calc(var(--x) * -1px) calc(var(--y) * -1px);
+  transition: transform .05s, filter .05s;
+}
+
+.tecla:hover .tecla-face { filter: brightness(1.06); }
+
+.tecla:active .tecla-face,
+.tecla.pressionada .tecla-face {
+  transform: translateY(4px);
+  filter: brightness(.84);
 }
 
 .tecla:focus-visible {
-  outline: .9cqw solid #4c9bff;
-  outline-offset: .6cqw;
+  outline: 4px solid #4c9bff;
+  outline-offset: 3px;
 }
 
-/* teclas numéricas: posições medidas na placa (em % da placa) */
-.tecla-num {
-  width: 17.8%;
-  height: 13.3%;
-  background: linear-gradient(180deg, #252323 0%, #1b1919 55%, #151313 100%);
-  color: #f2f2f2;
-}
+.tecla[data-tecla="1"] { --x: 1033; --y: 218; --w: 81; --h: 57; }
+.tecla[data-tecla="2"] { --x: 1132; --y: 218; --w: 79; --h: 57; }
+.tecla[data-tecla="3"] { --x: 1229; --y: 218; --w: 79; --h: 57; }
+.tecla[data-tecla="4"] { --x: 1037; --y: 292; --w: 81; --h: 58; }
+.tecla[data-tecla="5"] { --x: 1137; --y: 292; --w: 79; --h: 58; }
+.tecla[data-tecla="6"] { --x: 1236; --y: 292; --w: 81; --h: 58; }
+.tecla[data-tecla="7"] { --x: 1039; --y: 368; --w: 83; --h: 60; }
+.tecla[data-tecla="8"] { --x: 1141; --y: 368; --w: 81; --h: 60; }
+.tecla[data-tecla="9"] { --x: 1242; --y: 368; --w: 81; --h: 60; }
+.tecla[data-tecla="0"] { --x: 1144; --y: 446; --w: 85; --h: 60; }
+.tecla[data-tecla="branco"] { --x: 997; --y: 523; --w: 112; --h: 70; }
+.tecla[data-tecla="corrige"] { --x: 1134; --y: 523; --w: 116; --h: 70; }
+.tecla[data-tecla="confirma"] { --x: 1272; --y: 512; --w: 119; --h: 81; }
 
-.tecla[data-tecla="1"] { left: 17%; top: 6.5%; }
-.tecla[data-tecla="2"] { left: 40.9%; top: 6.5%; }
-.tecla[data-tecla="3"] { left: 64.5%; top: 6.5%; }
-.tecla[data-tecla="4"] { left: 17%; top: 25.4%; }
-.tecla[data-tecla="5"] { left: 40.9%; top: 25.4%; }
-.tecla[data-tecla="6"] { left: 64.5%; top: 25.4%; }
-.tecla[data-tecla="7"] { left: 17%; top: 44.1%; }
-.tecla[data-tecla="8"] { left: 40.9%; top: 44.1%; }
-.tecla[data-tecla="9"] { left: 64.5%; top: 44.1%; }
-.tecla[data-tecla="0"] { left: 40.9%; top: 62%; }
+/* ---------- tela (área lógica 785x400 projetada no vidro) ---------- */
 
-.tecla-num .digito {
-  position: absolute;
-  left: 10%;
-  top: 50%;
-  transform: translateY(-52%);
-  font-size: 9.3cqw;
-  line-height: 1;
-}
-
-/* braille em relevo: sinal de número + dígito */
-.braille {
-  position: absolute;
-  display: block;
-  line-height: 0;
-}
-
-.braille svg {
-  display: block;
-  height: 100%;
-  width: auto;
-  overflow: visible;
-  fill: currentColor;
-}
-
-.tecla-num .braille {
-  left: 38%;
-  top: 50%;
-  height: 44%;
-  transform: translateY(-50%);
-  color: #6f6a69;
-  filter: drop-shadow(0 -.1cqw 0 rgba(255, 255, 255, .14)) drop-shadow(0 .12cqw 0 rgba(0, 0, 0, .6));
-}
-
-/* marca tátil da tecla 5 */
-.tecla-5::after {
-  content: "";
-  position: absolute;
-  left: 9%;
-  right: 24%;
-  bottom: 9%;
-  height: .55cqw;
-  border-radius: .3cqw;
-  background: #2e2c2b;
-  box-shadow: 0 -.12cqw 0 rgba(255, 255, 255, .16), 0 .12cqw 0 rgba(0, 0, 0, .6);
-}
-
-/* BRANCO, CORRIGE e CONFIRMA */
-.tecla-acao {
-  top: 79.9%;
-  height: 13.3%;
-  border-radius: .9cqw;
-}
-
-.tecla-acao .rotulo {
+/*
+ * Posições e tamanhos medidos sobre as fotos da urna real (via transformação
+ * inversa da perspectiva). Fonte: Arial / Liberation Sans (métricas iguais).
+ */
+.tela {
   position: absolute;
   left: 0;
-  right: 0;
-  top: 19%;
-  font-size: 5cqw;
-  font-weight: 700;
+  top: 0;
+  width: 785px;
+  height: 400px;
+  transform-origin: 0 0;
+  transform: matrix3d(0.90955414, 0, 0, 0, -0.12806505, 0.90770039, 0, -0.0001544021, 0, 0, 1, 0, 161, 175, 0, 1);
+  color: #0d0d12;
+  font-family: "Urna Sans", Arial, "Liberation Sans", Helvetica, sans-serif;
   line-height: 1;
-  letter-spacing: 0;
-  text-align: center;
-  white-space: nowrap;
-  transform: scaleX(.84);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.tecla-acao .braille {
-  left: 50%;
-  bottom: 12%;
-  height: 2.6cqw;
-  transform: translateX(-50%);
-}
+.tv { position: absolute; inset: 0; }
 
-.tecla-branco {
-  --cor-lado: #c9c3c1;
-  left: 6.1%;
-  width: 25.1%;
-  background: linear-gradient(180deg, #ffffff 0%, #f6f3f2 100%);
-  color: #8e8a89;
-}
-.tecla-branco .braille { color: #d6d1cf; }
+.tv > * { position: absolute; white-space: nowrap; }
 
-.tecla-corrige {
-  --cor-lado: #b56a30;
-  left: 37.3%;
-  width: 24.9%;
-  background: linear-gradient(180deg, #f3a663 0%, #e69855 100%);
-  color: #a9592b;
-}
-.tecla-corrige .braille { color: #cd8143; }
+/* digitando: "Presidente" e caixas grandes */
+.tv-cargo { left: 76px; top: 91.8px; font-size: 63.7px; font-weight: 700; }
 
-.tecla-confirma {
-  --cor-lado: #2d9558;
-  left: 67.8%;
-  top: 76.3%;
-  width: 25.2%;
-  height: 16.4%;
-  background: linear-gradient(180deg, #5ad891 0%, #4bc57a 100%);
-  color: #217a46;
-}
-.tecla-confirma .rotulo { top: 21%; font-size: 5.6cqw; transform: scaleX(.7); }
-.tecla-confirma .braille { color: #39ad69; bottom: 16%; }
-
-/* ---------- conteúdo da tela (cqw = % da largura da tela) ---------- */
-
-.tv {
-  position: absolute;
-  inset: 0;
-  line-height: 1.15;
-}
-
-.tv-treinamento {
-  position: absolute;
-  top: 1.4cqw;
-  left: 55.6%;
-  transform: translateX(-50%);
-  font-size: 3.3cqw;
-  font-weight: 700;
-  letter-spacing: .04em;
-  color: #8e8e8e;
-  white-space: nowrap;
-}
-
-.tv-seu-voto {
-  position: absolute;
-  top: 1.9cqw;
-  left: 1cqw;
-  font-size: 2.4cqw;
-}
-
-.tv-cargo {
-  position: absolute;
-  top: 10.6cqw;
-  left: 15.5%;
-  font-size: 4.1cqw;
-}
-
-.tv-caixas {
-  position: absolute;
-  top: 18.6cqw;
-  left: 15.5%;
-  display: flex;
-  gap: .3cqw;
-}
+.tv-caixas { left: 88.9px; top: 176.9px; display: flex; gap: 15.9px; }
 
 .caixa {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 5.8cqw;
-  height: 6.6cqw;
-  border: .22cqw solid #7a7a7a;
-  font-size: 5cqw;
-  line-height: 1;
+  width: 94.3px;
+  height: 107.5px;
+  border: 3.8px solid currentColor;
+  font-size: 80px;
+  font-weight: 700;
 }
 
 .caixa.atual { animation: cursor 1s steps(1, end) infinite; }
 
 @keyframes cursor {
-  0%, 49% { background: #fff; }
-  50%, 100% { background: #c8c8c8; }
+  0%, 49% { border-color: currentColor; }
+  50%, 100% { border-color: rgba(13, 13, 18, .25); }
 }
 
-.tv-dados {
-  position: absolute;
-  top: 28.4cqw;
-  left: 1.2cqw;
-  right: 21cqw;
-  font-size: 3.15cqw;
-  line-height: 1.5;
-}
+/* voto pronto para confirmar */
+.tv-seu-voto { left: 30px; top: 39.2px; font-size: 26.8px; }
+.tv-pronto .tv-cargo { left: 31.7px; top: 66.9px; font-size: 63px; transform: scaleX(1.03); transform-origin: 0 0; }
+.tv-numero { left: 33.7px; top: 151.2px; font-size: 33.5px; }
+.tv-pronto .tv-caixas { left: 182.2px; top: 135.1px; gap: 12.8px; }
+.tv-pronto .caixa { width: 93.1px; height: 73px; border-width: 3.2px; font-size: 65px; }
 
-.tv-valor { overflow-wrap: anywhere; }
-
-.tv-fotos {
-  position: absolute;
-  top: 1.2cqw;
-  right: 1.4cqw;
-  width: 17cqw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .5cqw;
-}
+.tv-linha { left: 35.5px; font-size: 31.3px; }
+.tv-linha b { margin-left: .68em; }
+.tv-linha-vice b { margin-left: .38em; }
+.tv-linha-nome { top: 224px; }
+.tv-linha-partido { top: 266.6px; }
+.tv-linha-vice { top: 310.4px; }
 
 .tv-foto {
   margin: 0;
-  text-align: center;
+  border: 2.5px solid currentColor;
+  overflow: hidden;
+  background: #fff;
 }
 
-.tv-foto img {
-  display: block;
-  width: 15cqw;
-  height: 20.9cqw;
-  object-fit: cover;
-}
+.tv-foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.tv-foto-titular { left: 601.8px; top: 50px; width: 111.2px; height: 165px; }
+.tv-foto-vice { left: 617.7px; top: 226px; width: 79.4px; height: 118px; }
 
-.tv-foto figcaption {
-  margin-top: .3cqw;
-  font-size: 2.15cqw;
-}
+.tv-separador { left: 27.1px; right: 19.4px; top: 357.8px; height: 2.4px; background: currentColor; }
+.tv-confira { left: 415.9px; top: 363.2px; transform: translateX(-50%); font-size: 31.6px; font-weight: 700; }
 
-.tv-foto-vice img {
-  width: 10.6cqw;
-  height: 14.8cqw;
-}
+.tv-numero-errado { left: 35.5px; top: 224px; font-size: 31.3px; font-weight: 700; }
+.tv-grande { left: 392.5px; transform: translateX(-50%); font-size: 66px; font-weight: 700; }
+.tv-nulo { top: 266px; }
+.tv-branco { top: 200px; }
 
-.tv-media,
-.tv-grande,
-.tv-aviso {
-  position: absolute;
-  left: 3.2cqw;
-  right: 0;
-  text-align: center;
-}
-
-.tv-media { top: 29cqw; font-size: 3.6cqw; }
-.tv-grande { font-size: 7.6cqw; }
-.tv-nulo { top: 33.6cqw; }
-.tv-branco { top: 22.4cqw; }
-.tv-aviso { top: 29.5cqw; font-size: 3.1cqw; line-height: 1.4; }
+.tv-aviso { left: 76px; top: 312px; font-size: 28px; line-height: 1.35; }
 
 .pisca { animation: pisca 1s steps(1, end) infinite; }
 
@@ -813,77 +616,16 @@ body {
   60%, 100% { opacity: 0; }
 }
 
-.tv-rodape {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 48.3cqw;
-  padding: .5cqw 1cqw 0;
-  border-top: .2cqw solid #4a4a4a;
-  font-size: 2.35cqw;
-  line-height: 1.28;
-}
-
-.tv-rod-linha {
-  display: grid;
-  grid-template-columns: 15.6cqw auto;
-  column-gap: .6cqw;
-}
-
-.tv-rod-linha span { text-align: right; }
-
-/* tela FIM */
-.tv-data {
-  position: absolute;
-  top: 1.6cqw;
-  left: 1cqw;
-  font-size: 2.85cqw;
-  white-space: nowrap;
-}
-
-.tv-bateria {
-  position: absolute;
-  top: .9cqw;
-  right: 1.2cqw;
-  width: 7.2cqw;
-  height: 3.4cqw;
-}
-
+/* FIM (letras largas, como na urna) e VOTOU */
 .tv-fim {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 15.5cqw;
-  font-size: 32.5cqw;
-  line-height: 1;
-  text-align: center;
+  left: 388.8px;
+  top: 113.2px;
+  font-size: 185px;
+  transform: translateX(-50%) scaleX(1.4);
+  -webkit-text-stroke: 1.5px currentColor;
 }
 
-.tv-votou {
-  position: absolute;
-  right: 2.4cqw;
-  bottom: 3.6cqw;
-  font-size: 7.1cqw;
-  line-height: 1;
-  color: #a2a2a2;
-}
-
-.tv-status {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4.07cqw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #dce3eb;
-  color: #2a2a2a;
-  font-size: 2.2cqw;
-  white-space: nowrap;
-}
-
-.tv-status span { margin-left: 2.2cqw; }
+.tv-votou { right: 24px; top: 346.8px; font-size: 40.2px; transform: scaleX(1.11); transform-origin: 100% 0; }
 
 /* =========================================================
    Folhas de papel (cola e resumo)
@@ -1063,18 +805,17 @@ dialog.folha::backdrop {
   .aviso-celular { display: none; }
 }
 
-/* celular deitado / janelas baixas: esconde a parte traseira da urna */
+/* celular deitado / janelas baixas */
 @media (max-height: 560px) and (orientation: landscape) {
   .etiqueta { display: none; }
   .aviso-legal { display: none; }
   .barra { padding-bottom: 6px; }
   .papel { padding: 6px 10px; font-size: 12.5px; }
   .palco { padding-top: 8px; padding-bottom: 8px; }
-  .urna-traseira { display: none; }
-  .urna { width: min(94vw, calc((100svh - 70px) / .527), 1100px); }
+  .urna { width: min(94vw, calc((100svh - 64px) * 2.164), 1250px); }
 }
 
-/* celular em pé: tela em cima, teclado embaixo */
+/* celular em pé: tela em cima, teclado embaixo (recortes da mesma foto) */
 @media (max-width: 720px) and (orientation: portrait) {
   :root {
     --cab-topo: 7%;
@@ -1092,34 +833,26 @@ dialog.folha::backdrop {
 
   .palco { padding: 10px 2vw 12px; align-items: center; }
 
-  .urna { width: min(96vw, 500px); }
-
-  .urna-traseira { height: 6cqw; }
-
-  .urna-frente {
+  .urna {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: auto;
-    padding: 9cqw 3.6cqw 8cqw;
-    clip-path: polygon(3.3% 0, 96.9% 0, 100% 4%, 100% 100%, 0 100%, 0 4%);
-    background:
-      linear-gradient(90deg, rgba(0, 0, 0, 0) 97.4%, #c9c2b0 97.6%, #c3bca9 100%),
-      linear-gradient(180deg, #d1ccb9 0%, #d6d0c0 5cqw, #e4ded2 5.3cqw, #ddd7cb 5.8cqw, #dcd6ca 30cqw, #d5cfc0 100%);
+    gap: 10px;
+    width: min(96vw, 520px);
+    aspect-ratio: auto;
   }
 
-  .urna-tela-moldura,
-  .urna-terminal {
+  .urna::after { display: none; }
+
+  .urna-parte {
     position: relative;
     left: auto;
-    top: auto;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .35);
   }
 
-  .urna-tela-moldura { width: 100%; }
-  .urna-terminal { width: 66cqw; margin-top: 6cqw; }
-
-  .urna-pes { height: 4cqw; }
-  .urna-pes i { width: 1cqw; height: 3.6cqw; }
+  .urna-parte-tela { --jx: 95; --jy: 150; --jw: 805; --jh: 478; width: 100%; }
+  .urna-parte-teclado { --jx: 945; --jy: 82; --jw: 495; --jh: 548; width: 86%; }
 
   .barra-botoes { gap: 8px; }
   .papel { padding: 8px 11px; font-size: 13px; }
@@ -1128,5 +861,5 @@ dialog.folha::backdrop {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .papel, .tecla { transition: none; }
+  .papel, .tecla-face { transition: none; }
 }

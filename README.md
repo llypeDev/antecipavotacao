@@ -1,19 +1,27 @@
-# Simulador de Votação para Presidente · Eleições 2026
+# Simulador de Votação · Presidente · 2º turno 2026
 
-Simulador **não oficial** da urna eletrônica brasileira para treinar o voto para **Presidente da República** antes de ir à seção eleitoral.
-A página mostra a urna como se você estivesse dentro da cabina de votação de papelão, com os bipes das teclas
-e o famoso "pi-pi-pi-piiii" do fim da votação.
+Simulador **não oficial** da urna eletrônica brasileira para treinar o voto do **2º turno da eleição para
+Presidente da República (25 de outubro de 2026)**. A página mostra a urna como se você estivesse dentro da
+cabina de votação de papelão.
 
 ## O que tem
 
-- **Urna completa**: tela de LCD, teclado numérico com braille e as teclas BRANCO, CORRIGE e CONFIRMA.
-- **Voto para Presidente** (2 dígitos), com nome, partido, vice-presidente e fotos na tela.
-- **Regras da urna**: voto no candidato, voto em branco (só com o campo vazio), voto nulo (número inexistente),
-  barra de gravação e tela **FIM**.
-- **1º e 2º turno** (no 2º turno só os dois finalistas). Link direto para o 2º turno: `index.html#2turno`.
-- **Sons sintetizados** com a Web Audio API: nenhum arquivo de áudio é necessário.
-- **Colinha eleitoral** com a lista de candidatos fictícios e **resumo** do voto no final da simulação.
-- Funciona no computador e no celular (em pé, a tela fica em cima e o teclado embaixo).
+- **A urna de verdade**: a imagem é uma foto da urna eletrônica (`img/urna.webp`), com teclado, braille e
+  rótulo originais. As teclas são clicáveis e "afundam" ao serem pressionadas.
+- **Telas no padrão da urna**, desenhadas por cima do vidro com a mesma perspectiva da foto:
+  - digitando: "Presidente" e as duas caixas do número;
+  - voto pronto: "SEU VOTO PARA", "Presidente", "Número:", Nome, Partido, Vice-Presidente, fotos
+    e "Confira seu voto";
+  - NÚMERO ERRADO / VOTO NULO e VOTO EM BRANCO;
+  - aviso quando se aperta BRANCO com número digitado;
+  - **FIM** e "VOTOU".
+- **Candidatos do 2º turno**, em ordem numérica, com nome de urna, partido, vice e fotos oficiais:
+  - **13** LULA (PT) · vice GERALDO ALCKMIN (PSB)
+  - **22** FLAVIO BOLSONARO (PL) · vice ALFREDO GASPAR (PL)
+- **Sons**: clique das teclas e o "tirirí" do fim da votação (`som/urna-confirma.mp3`). Se o arquivo não
+  tocar, o mesmo som é sintetizado (tom alternando 2204 Hz e 2307 Hz).
+- **Colinha** com os dois candidatos e **resumo** do voto no final da simulação.
+- Funciona no computador e no celular (em pé, a tela e o teclado aparecem um embaixo do outro).
 - Teclado físico: números, <kbd>Enter</kbd> = CONFIRMA, <kbd>Backspace</kbd>/<kbd>Esc</kbd> = CORRIGE, <kbd>B</kbd> = BRANCO.
 
 ## Como rodar
@@ -37,26 +45,34 @@ Também dá para abrir o `index.html` direto no navegador.
 ## Estrutura
 
 ```
-index.html        página (cabina + urna + colinha)
-css/estilo.css    visual da cabina de papelão, da urna e da tela
-js/dados.js       partidos e candidatos a Presidente (edite aqui)
-js/urna.js        lógica da votação, desenho da tela e teclado
-js/som.js         efeitos sonoros (Web Audio API)
-js/graficos.js    fotos ilustrativas dos candidatos e brasão, gerados em SVG
+index.html          página (cabina + urna + colinha)
+css/estilo.css      cabina de papelão, urna e telas
+js/dados.js         candidatos do 2º turno (edite aqui)
+js/urna.js          lógica da votação, telas e teclado
+js/som.js           sons da urna
+js/graficos.js      brasão impresso na parede da cabina
+img/urna.webp       foto da urna (com a tela limpa)
+img/candidatos/     fotos oficiais dos candidatos
+som/                som do fim da votação
+fontes/             Liberation Sans (mesmas medidas do Arial usado na tela da urna)
 ```
 
-### Trocar candidatos
+### Como a tela é posicionada
 
-Edite `js/dados.js`: `partidos` liga o número (2 dígitos) à sigla, `candidatos` traz nome e vice, e
-`segundoTurno` diz quais números disputam o 2º turno. As fotos são desenhadas automaticamente a partir do nome
-(use `g: 'f'` ou `g: 'm'` e `grisalho: true` para variar o desenho).
+A foto da urna tem 1480×684 px. Tudo o que fica por cima dela (teclas e tela) usa essas coordenadas e é
+escalado junto com a foto. A tela é montada numa área de 785×400 px e projetada sobre o vidro com um
+`matrix3d` calculado a partir dos quatro cantos do vidro na foto, por isso o texto acompanha a perspectiva.
+As posições e os tamanhos dos textos foram medidos sobre fotos da urna real.
 
-### Ajustar os sons
+## Créditos
 
-Os parâmetros (frequência, duração e volume dos bipes) ficam no objeto `SOM`, no início de `js/som.js`.
+- Foto da urna e referências das telas: imagens fornecidas pelo autor do projeto.
+- Fotos dos candidatos: divulgação oficial do TSE (DivulgaCandContas), obtidas via
+  [minhacolinha.com](https://minhacolinha.com/simulador).
+- Som do fim da votação e timbre do clique das teclas: [minhacolinha.com](https://minhacolinha.com/simulador).
+- Fonte Liberation Sans: Red Hat / Google, licença SIL Open Font License 1.1 (`fontes/LICENSE.txt`).
 
 ## Aviso
 
-Este projeto **não tem vínculo** com o Tribunal Superior Eleitoral (TSE) nem com a Justiça Eleitoral.
-Todos os partidos e candidatos são **fictícios** e servem apenas para treino. Nenhum voto é enviado ou
-armazenado: tudo acontece no seu navegador.
+Este projeto **não tem vínculo** com o Tribunal Superior Eleitoral (TSE) nem com a Justiça Eleitoral, e não
+apoia nenhum candidato. Nenhum voto é enviado ou armazenado: tudo acontece no seu navegador.

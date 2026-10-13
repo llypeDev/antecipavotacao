@@ -16,13 +16,6 @@ window.DADOS_ELEICAO = {
     digitos: 2
   },
 
-  // Rodapé da tela da urna (mesmos valores fictícios do modo de treinamento do TSE)
-  secao: {
-    municipio: '99999 - Minha Cidade',
-    zona: '9999',
-    secao: '9999'
-  },
-
   candidatos: [
     {
       numero: '13',

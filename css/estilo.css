@@ -28,6 +28,7 @@ body {
   font-family: var(--fonte-ui);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  overflow-x: clip; /* não vira um contêiner de rolagem próprio */
 }
 
 .sr-only {
@@ -343,8 +344,8 @@ body {
   box-shadow: 0 2px 0 #120d08, 0 5px 12px rgba(0, 0, 0, .3);
 }
 
-#btn-som[aria-pressed="false"] { opacity: .8; }
-#btn-som[aria-pressed="false"] .onda { display: none; }
+#btn-som[data-ligado="false"] { opacity: .8; }
+#btn-som[data-ligado="false"] .onda { display: none; }
 
 .aviso-legal {
   margin: 0;
@@ -373,7 +374,7 @@ body {
    A urna é a foto real (img/urna.webp, 1480x684, tela já limpa).
    Tudo dentro de .urna-palco usa as coordenadas da foto em px e é
    escalado por JS (--s = largura exibida / 1480). A tela é desenhada numa área lógica de
-   840x400 px e projetada sobre o vidro com a mesma perspectiva da foto.
+   785x400 px e projetada sobre o vidro com a mesma perspectiva da foto.
    ========================================================= */
 
 @font-face {
@@ -457,7 +458,7 @@ body {
   background: url("../img/urna.webp") no-repeat;
   background-size: 1480px 684px;
   background-position: calc(var(--x) * -1px) calc(var(--y) * -1px);
-  clip-path: inset(var(--recorte, 2px 3px 3px 3px) round 9px);
+  clip-path: inset(var(--recorte, 1px 1px 2px 1px) round 7px);
   transition: transform .05s, filter .05s;
 }
 
@@ -465,8 +466,8 @@ body {
 .tecla::before {
   content: "";
   position: absolute;
-  inset: var(--recorte, 2px 3px 3px 3px);
-  border-radius: 9px;
+  inset: var(--recorte, 1px 1px 2px 1px);
+  border-radius: 7px;
   background: #0c0c0c;
   opacity: 0;
 }
@@ -485,8 +486,10 @@ body {
 }
 
 .tecla:focus-visible {
+  /* o contorno fica dentro da foto escalada: compensa a escala para ter ~3 px na tela */
   outline: 4px solid #4c9bff;
-  outline-offset: 3px;
+  outline-width: calc(3px / var(--s, 1));
+  outline-offset: calc(2px / var(--s, 1));
 }
 
 /* área de toque um pouco maior que a tecla (cobre metade do vão entre teclas) */
@@ -509,6 +512,11 @@ body {
 .tecla[data-tecla="branco"] { --x: 997; --y: 523; --w: 112; --h: 70; }
 .tecla[data-tecla="corrige"] { --x: 1134; --y: 523; --w: 116; --h: 70; }
 .tecla[data-tecla="confirma"] { --x: 1272; --y: 512; --w: 119; --h: 81; }
+
+/* as teclas coloridas ocupam o recorte inteiro na largura */
+.tecla[data-tecla="branco"],
+.tecla[data-tecla="corrige"],
+.tecla[data-tecla="confirma"] { --recorte: 1px 0 2px 0; }
 
 /* ---------- tela (área lógica 785x400 projetada no vidro) ---------- */
 
@@ -617,7 +625,7 @@ body {
 .tv-linha b { -webkit-text-stroke: 0; }
 .tv-votou { -webkit-text-stroke: 1.1px currentColor; }
 .tv-confira { -webkit-text-stroke: .4px currentColor; }
-.tv:not(.tv-pronto) .caixa { border-width: 4.8px; }
+.tv:not(.tv-pronto) .caixa { border-width: 4px; }
 
 /* =========================================================
    Folhas de papel (cola e resumo)

@@ -100,8 +100,8 @@
         p += linha('tv-linha-nome', 'Nome', c.nome) +
           linha('tv-linha-partido', 'Partido', c.partido) +
           (c.vice ? linha('tv-linha-vice', CARGO.tituloVice, c.vice.nome) : '');
-        p += '<figure class="tv-foto tv-foto-titular"><img src="' + esc(c.foto) + '" alt=""></figure>';
-        if (c.vice) p += '<figure class="tv-foto tv-foto-vice"><img src="' + esc(c.vice.foto) + '" alt=""></figure>';
+        p += '<div class="tv-foto tv-foto-titular"><img src="' + esc(c.foto) + '" alt=""></div>';
+        if (c.vice) p += '<div class="tv-foto tv-foto-vice"><img src="' + esc(c.vice.foto) + '" alt=""></div>';
       } else {
         p += '<div class="tv-numero-errado">NÚMERO ERRADO</div>' +
           '<div class="tv-grande tv-nulo pisca">VOTO NULO</div>';
@@ -357,7 +357,8 @@
   });
 
   function atualizarBotaoSom() {
-    el.btnSom.setAttribute('aria-pressed', String(Som.ligado));
+    // o texto do botão já diz o estado (sem aria-pressed, para o leitor de tela não repetir)
+    el.btnSom.setAttribute('data-ligado', String(Som.ligado));
     el.btnSom.querySelector('.rotulo-som').textContent = Som.ligado ? 'Som ligado' : 'Som desligado';
   }
   el.btnSom.addEventListener('click', function () {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Simulador de Votação · Presidente 2º turno 2026 · Urna Eletrônica</title>
   <meta name="description" content="Simulador não oficial da urna eletrônica para o 2º turno da eleição para Presidente (25/10/2026): treine seu voto na urna, numa seção eleitoral, com os sons da urna.">
-  <meta name="theme-color" content="#3a2a1b">
+  <meta name="theme-color" content="#cfc9ba">
   <meta property="og:title" content="Simulador de Votação · Presidente 2º turno 2026">
   <meta property="og:description" content="Treine seu voto para Presidente na urna eletrônica antes de ir à seção eleitoral.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='16' width='60' height='32' rx='3' fill='%23dcd6ca'/%3E%3Crect x='6' y='21' width='34' height='21' fill='%23fff' stroke='%239d978d'/%3E%3Crect x='43' y='19' width='16' height='6' fill='%23f4ede7'/%3E%3Crect x='43' y='25' width='16' height='20' fill='%233a3434'/%3E%3Crect x='44' y='40' width='4' height='3' fill='%23faf7f6'/%3E%3Crect x='49' y='40' width='4' height='3' fill='%23e69855'/%3E%3Crect x='54' y='39' width='4' height='4' fill='%234dcd86'/%3E%3C/svg%3E">
@@ -46,20 +46,23 @@
         <div class="urna" id="urna">
           <!-- A urna é a foto real (img/urna.webp); a tela e as teclas ficam por cima -->
           <div class="urna-palco">
-            <div class="tela" id="tela"></div>
-            <button type="button" class="tecla" data-tecla="1" aria-label="1"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="2" aria-label="2"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="3" aria-label="3"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="4" aria-label="4"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="5" aria-label="5"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="6" aria-label="6"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="7" aria-label="7"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="8" aria-label="8"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="9" aria-label="9"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="0" aria-label="0"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="branco" aria-label="Branco"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="corrige" aria-label="Corrige"><span class="tecla-face"></span></button>
-            <button type="button" class="tecla" data-tecla="confirma" aria-label="Confirma"><span class="tecla-face"></span></button>
+            <!-- a tela é descrita para leitores de tela em #anuncio -->
+            <div class="tela" id="tela" aria-hidden="true"></div>
+            <div role="group" aria-label="Teclado da urna">
+              <button type="button" class="tecla" data-tecla="1" aria-label="1"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="2" aria-label="2"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="3" aria-label="3"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="4" aria-label="4"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="5" aria-label="5"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="6" aria-label="6"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="7" aria-label="7"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="8" aria-label="8"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="9" aria-label="9"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="0" aria-label="0"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="branco" aria-label="Branco"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="corrige" aria-label="Corrige"><span class="tecla-face"></span></button>
+              <button type="button" class="tecla" data-tecla="confirma" aria-label="Confirma"><span class="tecla-face"></span></button>
+            </div>
           </div>
         </div>
       </div>
@@ -80,7 +83,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Ver meu voto
         </button>
-        <button type="button" class="papel" id="btn-som" aria-pressed="true">
+        <button type="button" class="papel" id="btn-som" data-ligado="true">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="currentColor"/><path class="onda" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           <span class="rotulo-som">Som ligado</span>
         </button>

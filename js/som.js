@@ -31,12 +31,17 @@
     if (!ctx) {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
-      ctx = new AC();
-      ruido = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.03), ctx.sampleRate);
-      var dados = ruido.getChannelData(0);
-      for (var i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
+      // Se o áudio falhar (navegador bloqueando, sem dispositivo), a urna segue sem som
+      try {
+        ctx = new AC();
+        ruido = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.03), ctx.sampleRate);
+        var dados = ruido.getChannelData(0);
+        for (var i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
+      } catch (e) { ctx = null; ruido = null; return null; }
     }
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') {
+      try { var r = ctx.resume(); if (r && r.catch) r.catch(function () {}); } catch (e) { /* ignora */ }
+    }
     return ctx;
   }
 
@@ -74,7 +79,8 @@
 
   // Reserva: reproduz o som da urna com os mesmos tons do arquivo
   function fimSintetizado() {
-    if (!contexto()) return;
+    // o som pode ter sido desligado enquanto o arquivo tentava tocar
+    if (!ligado || !contexto()) return;
     var t = ctx.currentTime + 0.01;
     var passo = 0.095;
     var osc = ctx.createOscillator();

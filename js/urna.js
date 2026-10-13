@@ -175,6 +175,7 @@
     estado.fase = 'fim';
     Som.fim();
     render();
+    if (window.Votometro) Votometro.registrar(estado.voto);
     vibrar([60, 40, 60, 40, 220]);
     return true;
   }
@@ -210,6 +211,12 @@
     clearTimeout(b._soltar);
     b._soltar = setTimeout(function () { b.classList.remove('pressionada'); }, falta);
   }
+
+  // Fotos já carregadas antes de digitar, para a tela nunca mostrar a moldura vazia
+  D.candidatos.forEach(function (c) {
+    new Image().src = c.foto;
+    if (c.vice) new Image().src = c.vice.foto;
+  });
 
   function iniciar() {
     estado.digitos = '';
@@ -274,16 +281,32 @@
   /* ---------- eventos ---------- */
 
   document.querySelectorAll('.tecla').forEach(function (b) {
+    var cancelado = false;
     b.addEventListener('click', function () {
+      // toque já tratado no pointerup: ignora o click que o navegador gera em seguida
+      if (b._toqueEm && Date.now() - b._toqueEm < 700) { b._toqueEm = 0; return; }
       pressionar(b.getAttribute('data-tecla'));
     });
-    b.addEventListener('pointerdown', function () { afundar(b); });
+    // No toque, a tecla vale ao soltar o dedo, mesmo num toque demorado
+    // (o Android não gera click depois de um toque longo)
+    b.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
+    b.addEventListener('pointerdown', function () { cancelado = false; afundar(b); });
+    b.addEventListener('pointercancel', function () { cancelado = true; });
+    b.addEventListener('pointerup', function (ev) {
+      if (ev.pointerType === 'mouse' || cancelado) return;
+      var alvo = document.elementFromPoint(ev.clientX, ev.clientY);
+      if (!alvo || !b.contains(alvo)) return;
+      b._toqueEm = Date.now();
+      pressionar(b.getAttribute('data-tecla'));
+    });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (tipo) {
       b.addEventListener(tipo, function () { soltar(b); });
     });
     // Evita que o foco fique preso no botão depois de um toque/clique
     b.addEventListener('pointerup', function () { setTimeout(function () { b.blur(); }, 0); });
   });
+
+  var presas = {}; // teclas do teclado físico ainda seguradas
 
   document.addEventListener('keydown', function (ev) {
     if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
@@ -298,11 +321,24 @@
     else if (ev.key === 'b' || ev.key === 'B') tecla = 'branco';
     if (!tecla) return;
 
+    // Digitar tira o foco de botões (Colinha, Som...), para o Enter seguinte ser CONFIRMA
+    var foco = document.activeElement;
+    if (foco && foco !== document.body && foco.closest && foco.closest('button')) foco.blur();
+
     ev.preventDefault();
     if (ev.repeat) return;
     var b = document.querySelector('.tecla[data-tecla="' + tecla + '"]');
-    if (b) { afundar(b); soltar(b); }
+    if (b) { afundar(b); presas[ev.code] = b; }
     pressionar(tecla);
+  });
+
+  document.addEventListener('keyup', function (ev) {
+    var b = presas[ev.code];
+    if (b) { delete presas[ev.code]; soltar(b); }
+  });
+  window.addEventListener('blur', function () {
+    Object.keys(presas).forEach(function (k) { soltar(presas[k]); });
+    presas = {};
   });
 
   el.btnCola.addEventListener('click', function () { montarCola(); abrir(el.dlgCola); });

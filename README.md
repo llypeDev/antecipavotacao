@@ -20,9 +20,13 @@ seção eleitoral, com a fila de eleitores esperando e os mesários ao fundo.
   - **22** FLAVIO BOLSONARO (PL) · vice ALFREDO GASPAR (PL)
 - **Sons**: clique das teclas e o "tirirí" do fim da votação (`som/urna-confirma.mp3`). Se o arquivo não
   tocar, o mesmo som é sintetizado (tom alternando 2204 Hz e 2307 Hz).
+- **Votômetro** no topo da página: a cada CONFIRMA soma o voto ao candidato escolhido (ou a brancos/nulos),
+  com barra e contagem animadas. Ele conta **só as simulações feitas no próprio aparelho**, fica salvo no
+  navegador (`localStorage`) e tem o botão "zerar". Nada é enviado: juntar votos de várias pessoas e divulgar
+  seria uma enquete, proibida no período eleitoral (Resolução TSE nº 23.600/2019).
 - **Colinha** com os dois candidatos e **resumo** do voto no final da simulação.
-- **Cenário**: sala de aula de escola pública (quadro-negro com "Eleições 2026 · 2º turno", janelas, mural,
-  porta com o número da seção), fila de eleitores e mesa receptora, com desfoque de profundidade.
+- **Cenário em 2D**: ilustração de uma sala de aula de escola pública (quadro-negro com "Eleições 2026 ·
+  2º turno", janelas, mural, porta com o número da seção), fila de eleitores e mesa receptora.
 - Funciona no computador e no celular; a urna aparece sempre inteira (no celular em pé ela ocupa a largura da
   tela, e deitado fica maior).
 - Teclado físico: números, <kbd>Enter</kbd> = CONFIRMA, <kbd>Backspace</kbd>/<kbd>Esc</kbd> = CORRIGE, <kbd>B</kbd> = BRANCO.
@@ -52,6 +56,7 @@ index.html          página (cenário + urna + colinha)
 css/estilo.css      cenário, urna e telas
 js/dados.js         candidatos do 2º turno (edite aqui)
 js/urna.js          lógica da votação, telas e teclado
+js/votometro.js     votômetro (contagem salva só no navegador)
 js/som.js           sons da urna
 img/urna.webp       foto da urna (com a tela limpa)
 img/sala.webp       cenário: sala de aula com a fila de eleitores
@@ -80,4 +85,5 @@ As posições e os tamanhos dos textos foram medidos sobre fotos da urna real.
 ## Aviso
 
 Este projeto **não tem vínculo** com o Tribunal Superior Eleitoral (TSE) nem com a Justiça Eleitoral, e não
-apoia nenhum candidato. Nenhum voto é enviado ou armazenado: tudo acontece no seu navegador.
+apoia nenhum candidato. O votômetro não é pesquisa nem enquete: ele mostra apenas as simulações feitas no seu
+aparelho, e nenhum voto é enviado a servidor algum.

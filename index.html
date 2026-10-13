@@ -11,7 +11,6 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='16' width='60' height='32' rx='3' fill='%23dcd6ca'/%3E%3Crect x='6' y='21' width='34' height='21' fill='%23fff' stroke='%239d978d'/%3E%3Crect x='43' y='19' width='16' height='6' fill='%23f4ede7'/%3E%3Crect x='43' y='25' width='16' height='20' fill='%233a3434'/%3E%3Crect x='44' y='40' width='4' height='3' fill='%23faf7f6'/%3E%3Crect x='49' y='40' width='4' height='3' fill='%23e69855'/%3E%3Crect x='54' y='39' width='4' height='4' fill='%234dcd86'/%3E%3C/svg%3E">
   <link rel="preload" href="img/urna.webp" as="image" type="image/webp">
   <link rel="preload" href="img/sala.webp" as="image" type="image/webp">
-  <link rel="preload" href="som/urna-confirma.mp3" as="audio" type="audio/mpeg">
   <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
@@ -22,8 +21,23 @@
   <div class="layout">
     <header class="etiqueta">
       <div class="etiqueta-papel">
-        <h1>Simulador de Votação <span>Presidente</span></h1>
-        <p class="etiqueta-data"><strong>2º turno</strong> · 25 de outubro de 2026</p>
+        <div class="etiqueta-titulo">
+          <h1>Simulador de Votação <span>Presidente</span></h1>
+          <p class="etiqueta-data"><strong>2º turno</strong> · 25 de outubro de 2026</p>
+        </div>
+
+        <!-- Votômetro: conta só os votos simulados neste aparelho (nada é enviado) -->
+        <section class="votometro" aria-labelledby="votometro-titulo"
+          title="Conta apenas as simulações feitas neste aparelho. Não é pesquisa nem enquete.">
+          <h2 id="votometro-titulo">Votômetro <small>só deste aparelho · não é pesquisa</small></h2>
+          <ol class="vm-lista" id="vm-lista"></ol>
+          <p class="vm-outros">
+            <span>Brancos <b id="vm-branco">0</b></span>
+            <span>Nulos <b id="vm-nulo">0</b></span>
+            <span>Total <b id="vm-total">0</b></span>
+            <button type="button" class="vm-zerar" id="vm-zerar">zerar</button>
+          </p>
+        </section>
       </div>
     </header>
 
@@ -71,7 +85,7 @@
           <span class="rotulo-som">Som ligado</span>
         </button>
       </div>
-      <p class="aviso-legal">Simulador <strong>não oficial</strong>, sem vínculo com o TSE. Nenhum voto é registrado. <span class="so-teclado">Teclado: números, <kbd>Enter</kbd> confirma, <kbd>Backspace</kbd> corrige, <kbd>B</kbd> branco.</span></p>
+      <p class="aviso-legal"><span class="aviso-longo">Simulador <strong>não oficial</strong>, sem vínculo com o TSE. O votômetro conta só os votos simulados neste aparelho; nada é enviado e não é pesquisa.</span><span class="aviso-curto">Simulador <strong>não oficial</strong>. Votômetro só deste aparelho; não é pesquisa.</span> <span class="so-teclado">Teclado: números, <kbd>Enter</kbd> confirma, <kbd>Backspace</kbd> corrige, <kbd>B</kbd> branco.</span></p>
     </footer>
   </div>
 
@@ -109,6 +123,7 @@
 
   <script src="js/dados.js"></script>
   <script src="js/som.js"></script>
+  <script src="js/votometro.js"></script>
   <script src="js/urna.js"></script>
 </body>
 </html>

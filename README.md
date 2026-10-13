@@ -1,8 +1,8 @@
 # Simulador de Votação · Presidente · 2º turno 2026
 
 Simulador **não oficial** da urna eletrônica brasileira para treinar o voto do **2º turno da eleição para
-Presidente da República (25 de outubro de 2026)**. A urna fica sobre uma mesa numa sala de aula usada como
-seção eleitoral, com a fila de eleitores esperando e os mesários ao fundo.
+Presidente da República (25 de outubro de 2026)**. Fundo latte bem claro, só a urna em evidência, e um
+votômetro no estilo do painel de apuração do [seuimposto.com](https://seuimposto.com/).
 
 ## O que tem
 
@@ -20,16 +20,19 @@ seção eleitoral, com a fila de eleitores esperando e os mesários ao fundo.
   - **22** FLAVIO BOLSONARO (PL) · vice ALFREDO GASPAR (PL)
 - **Sons**: clique das teclas e o "tirirí" do fim da votação (`som/urna-confirma.mp3`). Se o arquivo não
   tocar, o mesmo som é sintetizado (tom alternando 2204 Hz e 2307 Hz).
-- **Votômetro** no topo da página: a cada CONFIRMA soma o voto ao candidato escolhido (ou a brancos/nulos),
-  com barra e contagem animadas. Ele conta **só as simulações feitas no próprio aparelho**, fica salvo no
-  navegador (`localStorage`) e tem o botão "zerar". Nada é enviado: juntar votos de várias pessoas e divulgar
-  seria uma enquete, proibida no período eleitoral (Resolução TSE nº 23.600/2019).
+- **Votômetro** no estilo do painel de apuração do seuimposto.com (ao lado da urna em telas largas, abaixo
+  dela no celular):
+  - duelo com foto, partido, porcentagem dos votos válidos e votos de cada candidato (vermelho do PT, azul do
+    PL), barra dividida com a marca dos 50% e a diferença em pontos e em votos;
+  - votos válidos, brancos e nulos;
+  - gráfico de linha "Ao longo das simulações", com a porcentagem de cada um a cada voto válido.
+
+  Ele conta **só as simulações feitas no próprio aparelho**, fica salvo no navegador (`localStorage`) e tem o
+  botão "Zerar". Nada é enviado: juntar votos de várias pessoas e divulgar seria uma enquete, proibida no
+  período eleitoral (Resolução TSE nº 23.600/2019).
 - **Colinha** com os dois candidatos e **resumo** do voto no final da simulação.
-- **Cenário em 2D**: ilustração de uma sala de aula de escola pública (quadro-negro com "Eleições 2026 ·
-  2º turno", janelas, mural, porta com o número da seção), fila de eleitores e mesa receptora. A urna fica
-  sobre uma mesa vista em primeira pessoa, que vai até a borda de baixo da tela.
-- Funciona no computador e no celular; a urna aparece sempre inteira (no celular em pé ela ocupa a largura da
-  tela, e deitado fica maior).
+- Funciona no computador e no celular; a urna aparece sempre inteira na primeira tela (no celular em pé ela
+  ocupa a largura da tela, e deitado fica maior).
 - Teclado físico: números, <kbd>Enter</kbd> = CONFIRMA, <kbd>Backspace</kbd>/<kbd>Esc</kbd> = CORRIGE, <kbd>B</kbd> = BRANCO.
 
 ## Como rodar
@@ -53,18 +56,16 @@ Também dá para abrir o `index.html` direto no navegador.
 ## Estrutura
 
 ```
-index.html          página (cenário + urna + colinha)
-css/estilo.css      cenário, urna e telas
+index.html          página (urna, votômetro e colinha)
+css/estilo.css      página, urna, telas e votômetro
 js/dados.js         candidatos do 2º turno (edite aqui)
 js/urna.js          lógica da votação, telas e teclado
-js/votometro.js     votômetro (contagem salva só no navegador)
+js/votometro.js     votômetro e gráfico (contagem salva só no navegador)
 js/som.js           sons da urna
 img/urna.webp       foto da urna (com a tela limpa)
-img/sala.webp       cenário: sala de aula com a fila de eleitores
-ferramentas/        geradores do cenário (gerar_sala.py) e do tampo da mesa (gerar_mesa.py)
 img/candidatos/     fotos oficiais dos candidatos
 som/                som do fim da votação
-fontes/             Liberation Sans (mesmas medidas do Arial usado na tela da urna)
+fontes/             Liberation Sans (mesmas medidas do Arial da tela da urna), Faustina e Geist (votômetro)
 ```
 
 ### Como a tela é posicionada
@@ -77,11 +78,14 @@ As posições e os tamanhos dos textos foram medidos sobre fotos da urna real.
 ## Créditos
 
 - Foto da urna e referências das telas: imagens fornecidas pelo autor do projeto.
-- Cenário: ilustração criada para este projeto (`ferramentas/gerar_sala.py`).
+- Visual do votômetro: inspirado no painel "Apuração 2026" do [seuimposto.com](https://seuimposto.com/).
 - Fotos dos candidatos: divulgação oficial do TSE (DivulgaCandContas), obtidas via
   [minhacolinha.com](https://minhacolinha.com/simulador).
 - Som do fim da votação e timbre do clique das teclas: [minhacolinha.com](https://minhacolinha.com/simulador).
-- Fonte Liberation Sans: Red Hat / Google, licença SIL Open Font License 1.1 (`fontes/LICENSE.txt`).
+- Fontes, todas com licença SIL Open Font License 1.1:
+  - Liberation Sans: Red Hat / Google (`fontes/LICENSE.txt`);
+  - Faustina: The Faustina Project Authors (`fontes/LICENSE-Faustina.txt`);
+  - Geist: Vercel (`fontes/LICENSE-Geist.txt`).
 
 ## Aviso
 

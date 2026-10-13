@@ -1,34 +1,81 @@
 /* =========================================================
-   Simulador de Votação 2026 — urna eletrônica numa seção eleitoral
-   (Presidente, 2º turno)
+   Simulador de Votação 2026 — urna eletrônica (Presidente, 2º turno)
+   Fundo latte bem claro, só a urna em evidência, e o votômetro no estilo
+   do painel de apuração do seuimposto.com.
    ========================================================= */
 
-:root {
-  --tinta: #2a2118;
-  --papel: #fbf8ef;
+@font-face {
+  font-family: "Faustina";
+  font-weight: 300;
+  font-display: swap;
+  src: url("../fontes/Faustina-Light.woff2") format("woff2");
+}
 
-  --fonte-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+@font-face {
+  font-family: "Faustina";
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fontes/Faustina-Regular.woff2") format("woff2");
+}
+
+/* no Geist o "º" e o "ª" são letras comuns: usa os da Faustina (elevados) */
+@font-face {
+  font-family: "Ordinal";
+  font-display: swap;
+  src: url("../fontes/Faustina-Regular.woff2") format("woff2");
+  unicode-range: U+00AA, U+00BA;
+}
+
+@font-face {
+  font-family: "Geist";
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fontes/Geist-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist";
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fontes/Geist-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist";
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fontes/Geist-SemiBold.woff2") format("woff2");
+}
+
+:root {
+  --fundo: #f6f0e8;          /* latte bem claro */
+  --cartao: #fffdfa;
+  --linha: rgba(70, 50, 30, .1);
+  --tinta: #1f1a16;
+  --suave: #75695e;
+  --serif: "Faustina", Georgia, "Times New Roman", serif;
+  --sans: "Ordinal", "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --fonte-urna: Arial, Helvetica, "Liberation Sans", "Nimbus Sans", sans-serif;
+  /* espaço que os botões ocupam embaixo da urna */
+  --acoes: 92px;
 }
 
 *,
 *::before,
 *::after { box-sizing: border-box; }
 
-html, body { margin: 0; height: 100%; }
-
-/* nada (fita da etiqueta, mesa) pode alargar a página no celular */
 html { overflow-x: clip; }
 
 body {
+  margin: 0;
   min-height: 100vh;
   min-height: 100svh;
-  background: #cfc9ba;
+  background: var(--fundo);
   color: var(--tinta);
-  font-family: var(--fonte-ui);
+  font: 400 14px/1.45 var(--sans);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  overflow-x: clip; /* não vira um contêiner de rolagem próprio */
+  overflow-x: clip;
 }
 
 .sr-only {
@@ -40,337 +87,428 @@ body {
 }
 
 /* =========================================================
-   Cenário: sala de aula usada como seção eleitoral, com a fila
-   (img/sala.webp, ilustração gerada por ferramentas/gerar_sala.py)
+   Layout: urna no centro; votômetro ao lado (telas largas) ou abaixo
    ========================================================= */
 
-.cena {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: #d9d3c4 url("../img/sala.webp") 50% 100% / cover no-repeat;
-}
-
-/* =========================================================
-   Layout da página
-   ========================================================= */
-
-.layout {
-  position: relative;
-  z-index: 1;
+.pagina {
   min-height: 100vh;
   min-height: 100svh;
-  min-height: 100dvh; /* a altura visível de fato, para a mesa chegar até embaixo */
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  overflow: hidden;
-  overflow: clip; /* corta o tampo da mesa na borda da tela */
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "topo" "palco" "painel" "rodape";
 }
 
-/* etiqueta de papel no topo da página */
-.etiqueta {
-  display: flex;
-  justify-content: center;
-  padding: 10px 16px 0;
-}
-
-.etiqueta-papel {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px 18px;
-  padding: 8px 16px;
-  background: var(--papel);
-  color: var(--tinta);
-  border-radius: 2px;
-  box-shadow: 0 5px 12px rgba(0, 0, 0, .3);
-  transform: rotate(-.6deg);
-}
-
-.etiqueta-papel::before,
-.etiqueta-papel::after {
-  content: "";
-  position: absolute;
-  top: -8px;
-  width: 54px;
-  height: 18px;
-  background: rgba(236, 226, 190, .85);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
-}
-.etiqueta-papel::before { left: -14px; transform: rotate(-22deg); }
-.etiqueta-papel::after { right: -14px; transform: rotate(18deg); }
-
-.etiqueta h1 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-
-.etiqueta h1 span { color: #6b5540; }
-
-.etiqueta-data {
-  margin: 0;
-  font-size: 12.5px;
-  color: #6b5b49;
-}
-
-.etiqueta-titulo { text-align: center; }
-
-/* ---------- votômetro (votos simulados neste aparelho) ---------- */
-
-.votometro {
-  display: grid;
-  grid-template-columns: auto auto;
-  align-items: center;
-  gap: 4px 14px;
-  padding-left: 18px;
-  border-left: 1px dashed #c9bda4;
-}
-
-.votometro h2 {
-  grid-column: 1 / -1;
-  margin: 0;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: #6b5540;
-}
-
-.votometro h2 small {
-  font-weight: 600;
-  letter-spacing: .02em;
-  text-transform: none;
-  color: #8a7862;
-}
-
-.vm-lista {
-  display: flex;
-  gap: 14px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.vm-item {
-  display: grid;
-  grid-template-columns: 30px minmax(150px, auto);
-  grid-template-rows: auto 7px;
-  column-gap: 7px;
-  row-gap: 4px;
-  align-items: center;
-  padding: 3px 6px 3px 3px;
-  border-radius: 4px;
-}
-
-.vm-item img {
-  grid-row: 1 / 3;
-  width: 30px;
-  height: 38px;
-  object-fit: cover;
-  border-radius: 2px;
-  background: #e7e0d0;
-  box-shadow: 0 0 0 1px rgba(42, 33, 24, .2);
-}
-
-.vm-linha {
+.topo {
+  grid-area: topo;
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  min-width: 0;
-  font-size: 12.5px;
-  line-height: 1.1;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  padding: 16px 24px 4px;
 }
 
-.vm-num {
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-
-.vm-nome {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 650;
-}
-
-.vm-qtd {
-  min-width: 2ch;
-  font-size: 17px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.vm-barra {
-  height: 7px;
-  overflow: hidden;
-  border-radius: 4px;
-  background: #e6dfcf;
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .12);
-}
-
-.vm-barra i {
-  display: block;
-  width: 0;
-  height: 100%;
-  border-radius: inherit;
-  background: #4a3a2a;
-  transition: width .5s cubic-bezier(.2, .8, .2, 1);
-}
-
-.vm-outros {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+.marca {
   margin: 0;
-  font-size: 11.5px;
-  color: #6b5b49;
-  white-space: nowrap;
+  font: 400 22px/1 var(--serif);
+  letter-spacing: -.01em;
 }
 
-.vm-outros span { border-radius: 3px; padding: 0 3px; }
-
-.vm-outros b {
-  color: var(--tinta);
-  font-variant-numeric: tabular-nums;
+.topo-info {
+  margin: 0;
+  font-size: 13px;
+  color: var(--suave);
 }
 
-.vm-zerar {
-  appearance: none;
-  margin-top: 1px;
-  padding: 1px 3px;
-  border: 0;
-  background: none;
-  color: #8a6a4a;
-  font: inherit;
-  text-decoration: underline;
-  cursor: pointer;
-}
+.topo-info strong { color: var(--tinta); font-weight: 500; }
 
-.vm-zerar:focus-visible { outline: 2px solid #2f7bf5; outline-offset: 1px; }
-
-/* destaque rápido quando um voto entra na contagem */
-.vm-subiu { animation: vm-subiu 1.1s ease-out; }
-
-@keyframes vm-subiu {
-  0%, 25% { background: #f6dc7a; }
-  100% { background: rgba(246, 220, 122, 0); }
-}
-
-/* palco onde a urna fica, apoiada na mesa */
+/* a urna, sozinha em evidência, com uma luz suave por trás */
 .palco {
-  grid-row: 2;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 1.5vh 2vw 1.6vh;
-}
-
-/* mesa onde a urna fica apoiada: o tampo é visto de frente, em perspectiva, e
-   continua até a borda de baixo da tela (quem vota está de pé diante da mesa).
-   O desenho do tampo é gerado por ferramentas/gerar_mesa.py */
-.mesa-urna {
-  position: relative;
-  padding: 0 0 2.2vh;
-}
-
-.mesa-urna::before {
-  content: "";
-  position: absolute;
-  top: 62%;            /* borda de trás do tampo, escondida atrás da urna */
-  left: -120%;         /* larga o bastante para cobrir telas de até 3,4 urnas */
-  right: -120%;
-  aspect-ratio: 340 / 120;
-  pointer-events: none;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 340 120' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='t' gradientUnits='userSpaceOnUse' x1='0' y1='0' x2='0' y2='120'%3E%3Cstop offset='0' stop-color='%23d6b487'/%3E%3Cstop offset='.04' stop-color='%23c8a06f'/%3E%3Cstop offset='.4' stop-color='%23ab8155'/%3E%3Cstop offset='1' stop-color='%2383603b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpolygon points='106,0 234,0 426,120 -86,120' fill='url(%23t)'/%3E%3Cg stroke='%235a3a1c' stroke-opacity='.07' stroke-width='.14'%3E%3Cline x1='114' y1='0' x2='-54' y2='120'/%3E%3Cline x1='122' y1='0' x2='-22' y2='120'/%3E%3Cline x1='130' y1='0' x2='10' y2='120'/%3E%3Cline x1='138' y1='0' x2='42' y2='120'/%3E%3Cline x1='146' y1='0' x2='74' y2='120'/%3E%3Cline x1='154' y1='0' x2='106' y2='120'/%3E%3Cline x1='162' y1='0' x2='138' y2='120'/%3E%3Cline x1='170' y1='0' x2='170' y2='120'/%3E%3Cline x1='178' y1='0' x2='202' y2='120'/%3E%3Cline x1='186' y1='0' x2='234' y2='120'/%3E%3Cline x1='194' y1='0' x2='266' y2='120'/%3E%3Cline x1='202' y1='0' x2='298' y2='120'/%3E%3Cline x1='210' y1='0' x2='330' y2='120'/%3E%3Cline x1='218' y1='0' x2='362' y2='120'/%3E%3Cline x1='226' y1='0' x2='394' y2='120'/%3E%3C/g%3E%3Cline x1='106.6' y1='.45' x2='233.4' y2='.45' stroke='%23fff4e0' stroke-opacity='.5' stroke-width='.3'/%3E%3Cpolyline points='-86,120 106,.12 234,.12 426,120' fill='none' stroke='%236a4728' stroke-width='.3' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
-}
-
-.mesa-urna .urna { z-index: 1; }
-
-.dica-girar { display: none; }
-
-/* barra de botões (papéis em cima da mesa) */
-.barra {
-  position: relative;
-  z-index: 2;
+  grid-area: palco;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
-  padding: 0 12px 10px;
+  justify-content: center;
+  padding: 18px 2vw 8px;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, .9), rgba(255, 255, 255, 0)) 50% 46% / 92% 88% no-repeat;
 }
 
-.barra-botoes {
+.acoes {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
+  margin-top: 26px;
 }
 
-.papel {
+.botao {
   appearance: none;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 14px;
-  border: 0;
-  border-radius: 3px;
-  background: var(--papel);
+  padding: 8px 15px;
+  border: 1px solid rgba(70, 50, 30, .14);
+  border-radius: 999px;
+  background: var(--cartao);
   color: var(--tinta);
-  font: 650 14px/1.1 var(--fonte-ui);
-  box-shadow: 0 2px 0 #d6cdb9, 0 5px 12px rgba(0, 0, 0, .3);
+  font: 500 13.5px/1.1 var(--sans);
+  white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
-  transition: transform .08s;
+  transition: background-color .15s, border-color .15s, transform .08s;
 }
 
 @media (hover: hover) {
-  .papel:hover { transform: translateY(-1px); }
-}
-.papel:active { transform: translateY(1px); }
-.papel:focus-visible { outline: 3px solid #2f7bf5; outline-offset: 2px; }
-.papel[hidden] { display: none; }
-.papel svg { width: 18px; height: 18px; flex: none; }
-
-.papel-destaque {
-  background: #2a2118;
-  color: #fbf8ef;
-  box-shadow: 0 2px 0 #120d08, 0 5px 12px rgba(0, 0, 0, .3);
+  .botao:hover { border-color: rgba(70, 50, 30, .28); background: #fff; }
 }
 
-#btn-som[data-ligado="false"] { opacity: .8; }
+.botao:active { transform: translateY(1px); }
+.botao:focus-visible { outline: 2px solid #3554d1; outline-offset: 2px; }
+.botao[hidden] { display: none; }
+.botao svg { width: 17px; height: 17px; flex: none; }
+
+.botao-destaque {
+  border-color: var(--tinta);
+  background: var(--tinta);
+  color: #fffdfa;
+}
+
+@media (hover: hover) {
+  .botao-destaque:hover { border-color: #000; background: #000; }
+}
+
+#btn-som[data-ligado="false"] { color: var(--suave); }
 #btn-som[data-ligado="false"] .onda { display: none; }
+
+.dica-girar { display: none; }
+
+.rodape {
+  grid-area: rodape;
+  padding: 10px 24px 16px;
+}
 
 .aviso-legal {
   margin: 0;
-  max-width: 920px;
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: rgba(30, 20, 10, .55);
-  color: #f3eee2;
   font-size: 12px;
-  line-height: 1.4;
+  line-height: 1.5;
+  color: var(--suave);
   text-align: center;
 }
 
-.aviso-curto { display: none; }
+.aviso-legal strong { color: var(--tinta); font-weight: 500; }
 
 .aviso-legal kbd {
   padding: 0 4px;
-  border: 1px solid rgba(255, 255, 255, .45);
-  border-radius: 3px;
+  border: 1px solid rgba(70, 50, 30, .22);
+  border-radius: 4px;
   font: inherit;
   font-size: 11px;
+}
+
+/* =========================================================
+   Votômetro (cartões no estilo do painel de apuração do seuimposto.com)
+   ========================================================= */
+
+.painel {
+  grid-area: painel;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 8px 16px 4px;
+}
+
+.cartao {
+  padding: 16px;
+  border: 1px solid var(--linha);
+  border-radius: 16px;
+  background: var(--cartao);
+  box-shadow: 0 1px 2px rgba(60, 40, 20, .04), 0 10px 30px -18px rgba(60, 40, 20, .18);
+}
+
+.vm-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--suave);
+}
+
+.vm-pilula {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(70, 50, 30, .06);
+  color: var(--tinta);
+  white-space: nowrap;
+}
+
+.vm-pilula i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.vm-manchete {
+  text-wrap: balance;
+  margin: 12px 0 14px;
+  font: 400 25px/1.14 var(--serif);
+  letter-spacing: -.01em;
+}
+
+.vm-duelo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.vm-cand {
+  min-width: 0;
+  margin: -6px;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.vm-cand-dir { text-align: right; }
+
+.vm-quem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.vm-cand-dir .vm-quem { flex-direction: row-reverse; }
+
+.vm-quem img {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+  object-position: 50% 18%;
+  background: #eee6dc;
+}
+
+.vm-quem div { min-width: 0; }
+
+.vm-nome {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.vm-partido {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto);
+}
+
+.vm-pct {
+  margin: 12px 0 2px;
+  font: 300 42px/.95 var(--serif);
+  letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.vm-pct sup {
+  margin-left: 1px;
+  font-size: 16px;
+  font-weight: 400;
+  vertical-align: 1.35em;
+  line-height: 0;
+  color: var(--texto);
+}
+
+.vm-votos {
+  margin: 0;
+  font-size: 12px;
+  color: var(--suave);
+}
+
+/* barra dividida: vermelho da esquerda, azul da direita, marca dos 50% */
+.vm-barra {
+  position: relative;
+  height: 6px;
+  margin: 16px 0 14px;
+  border-radius: 999px;
+  background: rgba(70, 50, 30, .08);
+}
+
+.vm-fatia {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  border-radius: 999px 0 0 999px;
+  transition: width .6s cubic-bezier(.2, .8, .2, 1);
+}
+
+.vm-fatia-dir {
+  left: auto;
+  right: 0;
+  border-radius: 0 999px 999px 0;
+}
+
+.vm-meio {
+  position: absolute;
+  left: 50%;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--tinta);
+}
+
+.vm-linhas,
+.vm-totais {
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--linha);
+}
+
+.vm-linhas { display: grid; gap: 6px; }
+
+.vm-linhas div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.vm-linhas dt { color: var(--suave); }
+.vm-linhas dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+.vm-totais {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.vm-totais div {
+  margin: -4px;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.vm-totais dt {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--suave);
+}
+
+.vm-totais dd {
+  margin: 2px 0 0;
+  font: 300 22px/1.1 var(--serif);
+  font-variant-numeric: tabular-nums;
+}
+
+.vm-nota {
+  margin: 12px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--suave);
+}
+
+.vm-zerar {
+  appearance: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.vm-zerar:focus-visible { outline: 2px solid #3554d1; outline-offset: 2px; }
+
+/* "Ao longo das simulações" */
+.vm-curva h2 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.vm-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--suave);
+}
+
+.vm-legenda i {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.vm-grafico svg { display: block; width: 100%; height: auto; overflow: visible; }
+
+.vm-grade line { stroke: rgba(70, 50, 30, .09); stroke-width: 1; }
+
+.vm-grade text,
+.vm-eixo text {
+  font: 500 10.5px var(--sans);
+  fill: var(--suave);
+}
+
+.vm-linha {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.vm-ponto-novo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: vm-ponto .6s ease-out;
+}
+
+@keyframes vm-ponto {
+  0% { transform: scale(2.2); }
+  100% { transform: scale(1); }
+}
+
+.vm-vazio {
+  margin: 8px 0 0;
+  padding: 26px 8px;
+  border: 1px dashed rgba(70, 50, 30, .18);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--suave);
+  text-align: center;
+}
+
+/* destaque rápido quando um voto entra na contagem */
+.vm-subiu { animation: vm-subiu 1.2s ease-out; }
+
+@keyframes vm-subiu {
+  0%, 25% { background: rgba(70, 50, 30, .08); background: color-mix(in srgb, var(--cor, #8a6a4a) 14%, transparent); }
+  100% { background: transparent; }
 }
 
 /* =========================================================
@@ -399,32 +537,38 @@ body {
 
 .urna {
   position: relative;
-  width: 90vw;
-  width: min(90vw, calc((100vh - 230px) * 2.164), 1250px);
-  width: min(90vw, calc((100svh - 230px) * 2.164), 1250px);
+  isolation: isolate;
+  width: 96vw;
+  width: min(96vw, calc((100vh - 150px) * 2.164), 1120px);
+  width: min(96vw, calc((100svh - 150px) * 2.164), 1120px);
   aspect-ratio: 1480 / 684;
 }
 
-/* com container queries a urna ocupa exatamente a altura que sobra entre o topo e os botões */
-@supports (container-type: size) {
-  .palco { container-type: size; min-height: 150px; }
-  .urna { width: min(94cqw, calc((100cqh - 2.2vh) * 2.164), 1250px); }
-}
-
-/* sombra da urna na mesa */
+/* a urna "pousada" no fundo claro: sombra de contato na base + sombra larga e suave */
+.urna::before,
 .urna::after {
   content: "";
   position: absolute;
-  left: .1%;
-  right: .1%;
-  bottom: .3%;
-  height: 2.4%;
   z-index: -1;
+  pointer-events: none;
+}
+
+.urna::before {
+  left: -3%;
+  right: -3%;
+  bottom: -6%;
+  height: 14%;
+  background: radial-gradient(closest-side, rgba(80, 52, 24, .2), rgba(80, 52, 24, 0));
+}
+
+.urna::after {
+  left: .6%;
+  right: .6%;
+  bottom: .2%;
+  height: 2.2%;
   border-radius: 2% / 50%;
-  /* contato com o tampo (até nos cantos) + sombra suave para a frente; escala com a urna */
-  background: rgba(34, 20, 8, .62);
-  box-shadow: 0 calc(12px * var(--s, .5)) calc(34px * var(--s, .5)) calc(4px * var(--s, .5)) rgba(44, 26, 10, .36);
-  filter: blur(calc(4px * var(--s, .5)));
+  background: rgba(70, 45, 20, .34);
+  filter: blur(calc(3px * var(--s, .5)));
 }
 
 .urna-palco {
@@ -634,39 +778,38 @@ body {
 .tv-confira { -webkit-text-stroke: .4px currentColor; }
 .tv:not(.tv-pronto) .caixa { border-width: 4px; }
 
+
 /* =========================================================
-   Folhas de papel (cola e resumo)
+   Janelas (colinha e resumo)
    ========================================================= */
 
 dialog.folha {
-  width: min(640px, 94vw);
+  width: min(600px, 94vw);
   max-width: none;
   max-height: 90vh;
   max-height: 90svh;
   padding: 0;
   border: 0;
   background: transparent;
+  color: var(--tinta);
   overflow: visible;
 }
 
 dialog.folha::backdrop {
-  background: rgba(24, 16, 8, .62);
-  backdrop-filter: blur(2px);
+  background: rgba(31, 26, 22, .42);
+  backdrop-filter: blur(3px);
 }
 
-.folha-papel {
+.folha-corpo {
   display: flex;
   flex-direction: column;
   max-height: 90vh;
   max-height: 90svh;
-  border-radius: 3px;
-  background:
-    linear-gradient(90deg, transparent 38px, rgba(214, 74, 74, .35) 38px 40px, transparent 40px),
-    repeating-linear-gradient(180deg, transparent 0 27px, rgba(80, 120, 190, .1) 27px 28px),
-    #fffdf6;
-  color: #222;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, .5);
-  transform: rotate(-.4deg);
+  border: 1px solid var(--linha);
+  border-radius: 18px;
+  background: var(--cartao);
+  box-shadow: 0 30px 70px -24px rgba(40, 25, 10, .4);
+  font-family: var(--sans);
 }
 
 .folha-topo {
@@ -674,44 +817,45 @@ dialog.folha::backdrop {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 18px 8px 52px;
+  padding: 18px 20px 8px;
 }
 
 .folha-topo h2 {
   margin: 0;
-  font-size: 21px;
-  font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", var(--fonte-ui);
-  color: #1d3c8f;
+  font: 400 24px/1.15 var(--serif);
+  letter-spacing: -.01em;
 }
 
 .folha-fechar {
   appearance: none;
-  width: 36px;
-  height: 36px;
-  border: 0;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--linha);
   border-radius: 50%;
-  background: rgba(0, 0, 0, .06);
-  color: #333;
-  font: 400 26px/1 var(--fonte-ui);
+  background: transparent;
+  color: var(--tinta);
+  font: 400 22px/1 var(--sans);
   cursor: pointer;
 }
 
 @media (hover: hover) {
-  .folha-fechar:hover { background: rgba(0, 0, 0, .12); }
+  .folha-fechar:hover { background: rgba(70, 50, 30, .06); }
 }
 
 .folha-conteudo {
   overflow: auto;
-  padding: 4px 18px 10px 52px;
-  font-size: 14.5px;
+  padding: 4px 20px 12px;
+  font-size: 14px;
 }
 
-.cola-intro { margin: 0 0 6px; }
+.cola-intro { margin: 0 0 6px; color: var(--suave); }
+.cola-intro strong { color: var(--tinta); font-weight: 500; }
 
 .cola-lista {
   display: grid;
   gap: 10px;
-  margin: 8px 0 4px;
+  margin: 10px 0 4px;
   padding: 0;
   list-style: none;
 }
@@ -721,22 +865,25 @@ dialog.folha::backdrop {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--linha);
+  border-radius: 12px;
 }
 
 .cola-lista img {
   flex: none;
-  width: 52px;
-  height: 72px;
+  width: 48px;
+  height: 64px;
   object-fit: cover;
-  border: 1px solid #bbb;
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
 .cola-num {
   flex: none;
   min-width: 52px;
   padding: 3px 6px;
-  border: 1.5px solid #333;
+  border: 1.5px solid var(--tinta);
+  border-radius: 4px;
   background: #fff;
   font: 700 22px/1.2 var(--fonte-urna);
   letter-spacing: .12em;
@@ -745,9 +892,9 @@ dialog.folha::backdrop {
 
 .cola-nome {
   min-width: 0;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  font-size: 15px;
+  font-size: 14.5px;
   line-height: 1.25;
 }
 
@@ -755,20 +902,21 @@ dialog.folha::backdrop {
   display: block;
   font-weight: 400;
   text-transform: none;
-  color: #555;
+  color: var(--suave);
   font-size: 12px;
 }
 
 .folha-dicas,
 .folha-nota {
   margin: 0;
-  padding: 10px 18px 14px 52px;
-  border-top: 1px dashed rgba(0, 0, 0, .2);
-  font-size: 13.5px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--linha);
+  font-size: 13px;
   line-height: 1.6;
+  color: var(--suave);
 }
 
-.folha-nota { color: #5a4a3a; }
+.folha-dicas strong { color: var(--tinta); font-weight: 500; }
 
 .mini {
   display: inline-block;
@@ -784,136 +932,132 @@ dialog.folha::backdrop {
 
 .resumo-cargo {
   display: block;
+  font-family: var(--sans);
   font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  color: #6b6b6b;
+  font-weight: 500;
+  color: var(--suave);
 }
 
 .resumo-voto {
   margin: 0;
   padding: 4px 0 8px;
-  font-size: 17px;
-  line-height: 1.4;
+  font: 400 22px/1.3 var(--serif);
 }
-.resumo-voto b { letter-spacing: .08em; }
-.resumo-voto small { color: #666; }
+.resumo-voto b { font-family: var(--fonte-urna); font-size: 19px; letter-spacing: .08em; }
+.resumo-voto small { font-family: var(--sans); font-size: 13px; color: var(--suave); }
 
 .folha-acoes {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 0 18px 16px;
+  gap: 8px;
+  padding: 0 20px 18px;
 }
 
 /* =========================================================
    Responsivo
    ========================================================= */
 
-/* telas médias: o votômetro passa para baixo do título */
-@media (max-width: 960px) {
-  .votometro { padding: 6px 0 0; border-left: 0; border-top: 1px dashed #c9bda4; }
-}
-
-/* celular deitado / janelas baixas */
-@media (max-height: 560px) and (orientation: landscape) {
-  /* só o votômetro, numa linha */
-  .etiqueta { padding: 6px 10px 0; }
-  .etiqueta-papel { padding: 3px 10px; transform: none; }
-  .etiqueta-papel::before,
-  .etiqueta-papel::after,
-  .etiqueta-titulo,
-  .votometro h2 { display: none; }
-  .votometro { display: flex; gap: 12px; padding-left: 0; border-left: 0; }
-  .vm-lista { gap: 10px; }
-  .vm-item { grid-template-columns: 18px minmax(110px, auto); grid-template-rows: auto 4px; row-gap: 2px; padding: 1px 4px 1px 1px; }
-  .vm-item img { width: 18px; height: 22px; }
-  .vm-linha { font-size: 11.5px; }
-  .vm-qtd { font-size: 13px; }
-  .vm-barra { height: 4px; }
-  .vm-outros { flex-direction: row; align-items: center; gap: 8px; font-size: 11px; }
-  .vm-zerar { margin: 0; }
-  /* botões e um aviso curto na mesma linha */
-  .barra { flex-direction: row; justify-content: center; gap: 10px; padding-bottom: 6px; }
-  .barra-botoes { flex-wrap: nowrap; gap: 8px; }
-  #btn-som .rotulo-som {
-    position: absolute; width: 1px; height: 1px; overflow: hidden;
-    clip: rect(0 0 0 0); white-space: nowrap;
+/* telas largas: votômetro numa coluna ao lado da urna; tudo cabe na tela */
+@media (min-width: 1100px) and (min-height: 600px) {
+  /* a linha do meio cresce com o painel se a janela for baixa: a página rola um
+     pouco, mas a urna continua inteira na primeira tela */
+  .pagina {
+    min-height: 100dvh;
+    grid-template-columns: minmax(0, 1fr) clamp(330px, 24vw, 400px);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "topo topo" "palco painel" "rodape rodape";
+    column-gap: 20px;
+    padding: 0 24px;
   }
-  .aviso-legal { flex: 0 1 250px; min-width: 150px; padding: 2px 8px; font-size: 10px; line-height: 1.3; text-align: left; }
-  .aviso-longo,
-  .aviso-legal .so-teclado { display: none; }
-  .aviso-curto { display: inline; }
-  .papel { padding: 6px 9px; gap: 5px; font-size: 12.5px; white-space: nowrap; }
-  .palco { padding-top: 8px; padding-bottom: 6px; }
-  .mesa-urna { padding-bottom: 1.5vh; }
-  .urna { width: min(94vw, calc((100svh - 112px) * 2.164), 1250px); }
-  @supports (container-type: size) {
-    .urna { width: min(96cqw, calc((100cqh - 1.5vh) * 2.164), 1250px); }
-  }
-}
 
-/* celular deitado bem estreito (ex.: 568x320): aperta a linha do votômetro para caber */
-@media (max-height: 560px) and (orientation: landscape) and (max-width: 640px) {
-  .etiqueta-papel { padding-inline: 6px; }
-  .votometro { gap: 6px; }
-  .vm-lista { gap: 5px; }
-  .vm-item { column-gap: 5px; }
-  .vm-outros { gap: 5px; }
-  .vm-outros span:nth-child(3) { display: none; } /* o total sai; brancos e nulos ficam */
-}
+  .topo { padding-inline: 0; }
+  .rodape { padding: 8px 0 14px; }
 
-/* celular em pé: a urna inteira, do mesmo jeito, ocupando a largura */
-@media (max-width: 720px) and (orientation: portrait) {
-  .cena { background-position: 18% 100%; }
-
-  .etiqueta { padding: 8px 10px 0; }
-  .etiqueta-papel { flex-direction: column; width: 100%; padding: 6px 10px 8px; gap: 6px; transform: none; }
-  .etiqueta h1 { font-size: 13px; }
-  .etiqueta-data { font-size: 11.5px; }
-
-  .votometro {
-    grid-template-columns: 1fr;
-    width: 100%;
-    padding: 6px 0 0;
-    border-left: 0;
-    border-top: 1px dashed #c9bda4;
-  }
-  .votometro h2 { text-align: center; }
-  .vm-lista { flex-direction: column; gap: 4px; }
-  .vm-item { grid-template-columns: 26px 1fr; grid-template-rows: auto 6px; }
-  .vm-item img { width: 26px; height: 32px; }
-  .vm-barra { height: 6px; }
-  .vm-outros { flex-direction: row; justify-content: center; gap: 12px; }
-
+  /* a área da urna nunca passa da altura da tela, mesmo quando o painel cresce */
   .palco {
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 10px 2vw 14px;
+    align-self: start;
+    height: min(100%, calc(100vh - 88px));
+    height: min(100%, calc(100dvh - 88px));
+    padding: 8px 0;
   }
+  .urna { width: min(calc(76vw - 90px), calc((100vh - 190px) * 2.164), 1250px); }
 
-  .palco { container-type: normal; min-height: 0; }
+  .painel {
+    align-content: center;
+    max-width: none;
+    margin: 0;
+    padding: 8px 2px;
+  }
+}
+
+/* coluna lateral: cartões mais compactos para caber em 1366x768 */
+@media (min-width: 1100px) and (min-height: 600px) {
+  .painel { gap: 10px; }
+  .cartao { padding: 14px; }
+  .vm-manchete { margin: 10px 0 12px; font-size: 22px; }
+  .vm-quem img { width: 40px; height: 40px; border-radius: 9px; }
+  .vm-pct { margin-top: 10px; font-size: 36px; }
+  .vm-barra { margin: 13px 0 12px; }
+  .vm-linhas, .vm-totais { padding-top: 10px; }
+  .vm-totais { margin-top: 10px; }
+  .vm-totais dd { font-size: 20px; }
+  .vm-nota { margin-top: 10px; }
+}
+
+@media (min-width: 1100px) and (max-height: 820px) {
+  .vm-linhas div:nth-child(2) { display: none; } /* o total é a soma dos três números de baixo */
+}
+
+/* com container queries, a urna ocupa exatamente o espaço livre do palco */
+@media (min-width: 1100px) and (min-height: 600px) {
+  @supports (container-type: size) {
+    .palco { container-type: size; }
+    .urna { width: min(100cqw, calc((100cqh - var(--acoes)) * 2.164), 1250px); }
+  }
+}
+
+/* telas médias: os dois cartões lado a lado, abaixo da urna */
+@media (min-width: 700px) and (max-width: 1099.98px), (min-width: 700px) and (max-height: 599.98px) {
+  .painel { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+
+/* celular deitado / janelas baixas: a urna ocupa a primeira tela */
+@media (max-height: 560px) and (orientation: landscape) {
+  .topo { padding: 8px 16px 0; }
+  .marca { font-size: 18px; }
+  .palco { padding-top: 6px; }
+  .acoes { margin-top: 14px; }
+  .botao { padding: 6px 12px; font-size: 12.5px; }
+  .urna { width: min(94vw, calc((100svh - 108px) * 2.164)); }
+}
+
+/* celular em pé: a urna inteira ocupando a largura */
+@media (max-width: 720px) and (orientation: portrait) {
+  .topo { padding: 14px 16px 0; }
+  .palco { padding: 22px 2vw 4px; background-size: 100% 70%; }
   .urna { width: 96vw; }
+  .acoes { margin-top: 20px; }
+  .botao { padding: 8px 12px; font-size: 13px; }
+
   .dica-girar {
-    position: relative;
-    z-index: 2;
     display: block;
     margin: 10px 0 0;
-    padding: 4px 10px;
-    border-radius: 4px;
-    background: rgba(30, 20, 10, .55);
-    color: #f3eee2;
     font-size: 12px;
+    color: var(--suave);
   }
 
-  .barra-botoes { gap: 8px; }
-  .papel { padding: 8px 11px; font-size: 13px; }
-  .aviso-legal { font-size: 11px; }
+  .painel { padding: 12px 10px 4px; }
+  .vm-manchete { font-size: 23px; }
+  .vm-pct { font-size: 38px; }
   .aviso-legal .so-teclado { display: none; }
+}
+
+@media (max-width: 360px) {
+  .vm-pct { font-size: 33px; }
+  .vm-quem img { width: 40px; height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .papel, .tecla-face, .vm-barra i { transition: none; }
-  .vm-subiu, .pisca, .caixa.atual { animation: none; }
+  .botao, .tecla-face, .vm-fatia { transition: none; }
+  .vm-subiu, .vm-ponto-novo, .pisca, .caixa.atual { animation: none; }
 }

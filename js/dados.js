@@ -20,6 +20,8 @@ window.DADOS_ELEICAO = {
     {
       numero: '13',
       nome: 'LULA',
+      exibicao: 'Lula',          // nome no votômetro
+      cor: '#ee2d35',            // vermelho do PT (mesmo tom do seuimposto.com)
       nomeCompleto: 'Luiz Inácio Lula da Silva',
       partido: 'PT',
       foto: 'img/candidatos/13-lula.jpg',
@@ -33,6 +35,8 @@ window.DADOS_ELEICAO = {
     {
       numero: '22',
       nome: 'FLAVIO BOLSONARO',
+      exibicao: 'Flávio Bolsonaro',
+      cor: '#4162e2',            // azul do PL (mesmo tom do seuimposto.com)
       nomeCompleto: 'Flávio Nantes Bolsonaro',
       partido: 'PL',
       foto: 'img/candidatos/22-flavio-bolsonaro.jpg',

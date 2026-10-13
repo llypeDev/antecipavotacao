@@ -4,96 +4,106 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Simulador de Votação · Presidente 2º turno 2026 · Urna Eletrônica</title>
-  <meta name="description" content="Simulador não oficial da urna eletrônica para o 2º turno da eleição para Presidente (25/10/2026): treine seu voto na urna, numa seção eleitoral, com os sons da urna.">
-  <meta name="theme-color" content="#cfc9ba">
+  <meta name="description" content="Simulador não oficial da urna eletrônica para o 2º turno da eleição para Presidente (25/10/2026): treine seu voto na urna, com as telas e os sons da urna.">
+  <meta name="theme-color" content="#f6f0e8">
   <meta property="og:title" content="Simulador de Votação · Presidente 2º turno 2026">
   <meta property="og:description" content="Treine seu voto para Presidente na urna eletrônica antes de ir à seção eleitoral.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='16' width='60' height='32' rx='3' fill='%23dcd6ca'/%3E%3Crect x='6' y='21' width='34' height='21' fill='%23fff' stroke='%239d978d'/%3E%3Crect x='43' y='19' width='16' height='6' fill='%23f4ede7'/%3E%3Crect x='43' y='25' width='16' height='20' fill='%233a3434'/%3E%3Crect x='44' y='40' width='4' height='3' fill='%23faf7f6'/%3E%3Crect x='49' y='40' width='4' height='3' fill='%23e69855'/%3E%3Crect x='54' y='39' width='4' height='4' fill='%234dcd86'/%3E%3C/svg%3E">
   <link rel="preload" href="img/urna.webp" as="image" type="image/webp">
-  <link rel="preload" href="img/sala.webp" as="image" type="image/webp">
+  <link rel="preload" href="fontes/Faustina-Light.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fontes/Geist-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
 
-  <!-- Cenário: sala de aula usada como seção eleitoral, com a fila de eleitores -->
-  <div class="cena" aria-hidden="true"></div>
-
-  <div class="layout">
-    <header class="etiqueta">
-      <div class="etiqueta-papel">
-        <div class="etiqueta-titulo">
-          <h1>Simulador de Votação <span>Presidente</span></h1>
-          <p class="etiqueta-data"><strong>2º turno</strong> · 25 de outubro de 2026</p>
-        </div>
-
-        <!-- Votômetro: conta só os votos simulados neste aparelho (nada é enviado) -->
-        <section class="votometro" aria-labelledby="votometro-titulo"
-          title="Conta apenas as simulações feitas neste aparelho. Não é pesquisa nem enquete.">
-          <h2 id="votometro-titulo">Votômetro <small>só deste aparelho · não é pesquisa</small></h2>
-          <ol class="vm-lista" id="vm-lista"></ol>
-          <p class="vm-outros">
-            <span>Brancos <b id="vm-branco">0</b></span>
-            <span>Nulos <b id="vm-nulo">0</b></span>
-            <span>Total <b id="vm-total">0</b></span>
-            <button type="button" class="vm-zerar" id="vm-zerar">zerar</button>
-          </p>
-        </section>
-      </div>
+  <div class="pagina">
+    <header class="topo">
+      <h1 class="marca">Simulador 2026</h1>
+      <p class="topo-info"><strong>Presidente</strong> · 2º turno · 25 de outubro</p>
     </header>
 
     <main class="palco">
-      <div class="mesa-urna">
-        <div class="urna" id="urna">
-          <!-- A urna é a foto real (img/urna.webp); a tela e as teclas ficam por cima -->
-          <div class="urna-palco">
-            <!-- a tela é descrita para leitores de tela em #anuncio -->
-            <div class="tela" id="tela" aria-hidden="true"></div>
-            <div role="group" aria-label="Teclado da urna">
-              <button type="button" class="tecla" data-tecla="1" aria-label="1"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="2" aria-label="2"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="3" aria-label="3"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="4" aria-label="4"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="5" aria-label="5"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="6" aria-label="6"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="7" aria-label="7"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="8" aria-label="8"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="9" aria-label="9"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="0" aria-label="0"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="branco" aria-label="Branco"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="corrige" aria-label="Corrige"><span class="tecla-face"></span></button>
-              <button type="button" class="tecla" data-tecla="confirma" aria-label="Confirma"><span class="tecla-face"></span></button>
-            </div>
+      <div class="urna" id="urna">
+        <!-- A urna é a foto real (img/urna.webp); a tela e as teclas ficam por cima -->
+        <div class="urna-palco">
+          <!-- a tela é descrita para leitores de tela em #anuncio -->
+          <div class="tela" id="tela" aria-hidden="true"></div>
+          <div role="group" aria-label="Teclado da urna">
+            <button type="button" class="tecla" data-tecla="1" aria-label="1"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="2" aria-label="2"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="3" aria-label="3"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="4" aria-label="4"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="5" aria-label="5"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="6" aria-label="6"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="7" aria-label="7"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="8" aria-label="8"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="9" aria-label="9"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="0" aria-label="0"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="branco" aria-label="Branco"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="corrige" aria-label="Corrige"><span class="tecla-face"></span></button>
+            <button type="button" class="tecla" data-tecla="confirma" aria-label="Confirma"><span class="tecla-face"></span></button>
           </div>
         </div>
       </div>
-      <p class="dica-girar">Dica: gire o celular para ver a urna maior.</p>
-    </main>
 
-    <footer class="barra">
-      <div class="barra-botoes">
-        <button type="button" class="papel" id="btn-cola">
+      <div class="acoes">
+        <button type="button" class="botao" id="btn-cola">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 11h7M9 14.5h7M9 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           Colinha
         </button>
-        <button type="button" class="papel papel-destaque" id="btn-nova" hidden>
+        <button type="button" class="botao botao-destaque" id="btn-nova" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95M19 4v4h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Nova simulação
         </button>
-        <button type="button" class="papel" id="btn-resumo" hidden>
+        <button type="button" class="botao" id="btn-resumo" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Ver meu voto
         </button>
-        <button type="button" class="papel" id="btn-som" data-ligado="true">
+        <button type="button" class="botao" id="btn-som" data-ligado="true">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h4l5-4v13l-5-4H4z" fill="currentColor"/><path class="onda" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           <span class="rotulo-som">Som ligado</span>
         </button>
       </div>
-      <p class="aviso-legal"><span class="aviso-longo">Simulador <strong>não oficial</strong>, sem vínculo com o TSE. O votômetro conta só os votos simulados neste aparelho; nada é enviado e não é pesquisa.</span><span class="aviso-curto">Simulador <strong>não oficial</strong>. Votômetro só deste aparelho; não é pesquisa.</span> <span class="so-teclado">Teclado: números, <kbd>Enter</kbd> confirma, <kbd>Backspace</kbd> corrige, <kbd>B</kbd> branco.</span></p>
+      <p class="dica-girar">Dica: gire o celular para ver a urna maior.</p>
+    </main>
+
+    <!-- Votômetro: conta só os votos simulados neste aparelho (nada é enviado) -->
+    <aside class="painel" aria-label="Votômetro deste aparelho">
+      <section class="cartao vm" aria-labelledby="vm-manchete">
+        <div class="vm-topo">
+          <span>Presidente · neste aparelho</span>
+          <span class="vm-pilula"><i aria-hidden="true"></i>2º turno · 25/10</span>
+        </div>
+        <h2 class="vm-manchete" id="vm-manchete"></h2>
+        <div class="vm-duelo" id="vm-duelo"></div>
+        <div class="vm-barra" id="vm-barra" aria-hidden="true"></div>
+        <dl class="vm-linhas">
+          <div><dt>Diferença</dt><dd id="vm-dif">—</dd></div>
+          <div><dt>Votos simulados</dt><dd id="vm-total">0</dd></div>
+        </dl>
+        <dl class="vm-totais">
+          <div><dt>Votos válidos</dt><dd id="vm-validos">0</dd></div>
+          <div><dt>Brancos</dt><dd id="vm-branco">0</dd></div>
+          <div><dt>Nulos</dt><dd id="vm-nulo">0</dd></div>
+        </dl>
+        <p class="vm-nota">Conta só as simulações feitas neste aparelho. Nada é enviado e não é pesquisa.
+          <button type="button" class="vm-zerar" id="vm-zerar">Zerar</button></p>
+      </section>
+
+      <section class="cartao vm-curva" aria-labelledby="vm-curva-titulo">
+        <h2 id="vm-curva-titulo">Ao longo das simulações</h2>
+        <ul class="vm-legenda" id="vm-legenda"></ul>
+        <div class="vm-grafico" id="vm-grafico"></div>
+      </section>
+    </aside>
+
+    <footer class="rodape">
+      <p class="aviso-legal">Simulador <strong>não oficial</strong>, sem vínculo com o TSE. <span class="so-teclado">Teclado: números, <kbd>Enter</kbd> confirma, <kbd>Backspace</kbd> corrige, <kbd>B</kbd> branco.</span></p>
     </footer>
   </div>
 
   <dialog id="dlg-cola" class="folha" aria-labelledby="titulo-cola">
-    <div class="folha-papel">
+    <div class="folha-corpo">
       <header class="folha-topo">
         <h2 id="titulo-cola">Colinha · 2º turno</h2>
         <button type="button" class="folha-fechar" data-fechar aria-label="Fechar">×</button>
@@ -108,7 +118,7 @@
   </dialog>
 
   <dialog id="dlg-resumo" class="folha" aria-labelledby="titulo-resumo">
-    <div class="folha-papel">
+    <div class="folha-corpo">
       <header class="folha-topo">
         <h2 id="titulo-resumo">Seu voto nesta simulação</h2>
         <button type="button" class="folha-fechar" data-fechar aria-label="Fechar">×</button>
@@ -116,8 +126,8 @@
       <div id="resumo-conteudo" class="folha-conteudo"></div>
       <p class="folha-nota">Na urna de verdade o voto é secreto: nenhum comprovante com o seu voto é impresso ou exibido.</p>
       <div class="folha-acoes">
-        <button type="button" class="papel papel-destaque" data-nova>Nova simulação</button>
-        <button type="button" class="papel" data-fechar>Fechar</button>
+        <button type="button" class="botao botao-destaque" data-nova>Nova simulação</button>
+        <button type="button" class="botao" data-fechar>Fechar</button>
       </div>
     </div>
   </dialog>

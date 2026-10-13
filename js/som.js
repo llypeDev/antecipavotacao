@@ -2,9 +2,8 @@
  * Efeitos sonoros da urna, sintetizados com a Web Audio API
  * (nenhum arquivo de áudio é necessário).
  *
- *  - tecla():    "bip" curto de cada tecla pressionada
- *  - confirma(): sequência curta ao confirmar um cargo intermediário
- *  - fim():      o famoso "pi-pi-pi-pi-pi-piiiii" do fim da votação
+ *  - tecla(): "bip" curto de cada tecla pressionada
+ *  - fim():   o famoso "pi-pi-pi-pi-pi-piiiii" do fim da votação
  *
  * Os parâmetros ficam em SOM para facilitar o ajuste fino.
  */
@@ -117,9 +116,6 @@
         clique(t);
         bip(t, SOM.bipTecla);
       });
-    },
-    confirma: function () {
-      tocar(function () { sequencia(3, 0.13); });
     },
     fim: function () {
       tocar(function () { sequencia(6, SOM.longo); });

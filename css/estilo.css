@@ -516,12 +516,6 @@ body {
   line-height: 1.1;
 }
 
-.tv-vaga {
-  display: block;
-  margin-top: .6cqw;
-  font-size: 3.2cqw;
-}
-
 .tv-numero {
   display: flex;
   align-items: center;
@@ -884,29 +878,12 @@ dialog.folha::backdrop {
 
 .cola-intro { margin: 0 0 6px; }
 
-.cola-ordem {
-  margin: 0 0 8px;
-  padding-left: 20px;
-  line-height: 1.6;
-}
-
-.cola-ordem small { color: #6b6b6b; }
-
 .cola-cargo h3 {
   margin: 14px 0 6px;
   font-size: 15px;
   text-transform: uppercase;
   letter-spacing: .04em;
   color: #1d3c8f;
-}
-
-.cola-cargo h3 small {
-  margin-left: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: none;
-  letter-spacing: 0;
-  color: #6b6b6b;
 }
 
 .cola-cargo ul {
@@ -943,8 +920,6 @@ dialog.folha::backdrop {
   letter-spacing: .12em;
   text-align: center;
 }
-
-.cola-partidos .cola-num { min-width: 36px; }
 
 .cola-nome {
   min-width: 0;
@@ -985,16 +960,6 @@ dialog.folha::backdrop {
 .mini-corrige { background: #f08019; }
 .mini-branco { background: #fff; border: 1px solid #999; }
 
-.resumo-lista {
-  margin: 0;
-  padding-left: 20px;
-}
-
-.resumo-lista li {
-  padding: 5px 0;
-  line-height: 1.35;
-}
-
 .resumo-cargo {
   display: block;
   font-size: 12px;
@@ -1003,7 +968,12 @@ dialog.folha::backdrop {
   color: #6b6b6b;
 }
 
-.resumo-voto { font-size: 15.5px; }
+.resumo-voto {
+  margin: 0;
+  padding: 4px 0 8px;
+  font-size: 17px;
+  line-height: 1.4;
+}
 .resumo-voto b { letter-spacing: .08em; }
 .resumo-voto small { color: #666; }
 

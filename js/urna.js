@@ -1,5 +1,5 @@
 /*
- * Lógica da urna: estados da votação, desenho da tela e teclado.
+ * Lógica da urna (voto para Presidente): estados, desenho da tela e teclado.
  */
 (function () {
   'use strict';
@@ -7,6 +7,7 @@
   var D = window.DADOS_ELEICAO;
   var Som = window.SomUrna;
   var G = window.GraficosUrna;
+  var CARGO = D.cargo;
 
   var $ = function (sel) { return document.querySelector(sel); };
 
@@ -29,93 +30,39 @@
 
   var estado = {
     turno: 1,
-    etapas: [],
-    i: 0,
+    candidatos: [],
     digitos: '',
     branco: false,
     aviso: null,
-    votos: [],
+    voto: null,
     fase: 'votando' // votando | gravando | fim
   };
 
   /* ---------- dados ---------- */
 
-  function montarEtapas(turno) {
-    return D.turnos[turno].map(function (t) {
-      var cargo = D.cargos[t.cargo];
-      var lista = cargo.candidatos.filter(function (c) {
-        return !t.somente || t.somente.indexOf(c.numero) !== -1;
-      });
-      var mapa = {};
-      lista.forEach(function (c) { mapa[c.numero] = c; });
-      return {
-        id: t.cargo,
-        cargo: cargo,
-        vaga: t.vaga || null,
-        titulo: cargo.titulo,
-        digitos: cargo.digitos,
-        proporcional: !!cargo.proporcional,
-        candidatos: lista,
-        mapa: mapa
-      };
+  function candidatosDoTurno(turno) {
+    return D.candidatos.filter(function (c) {
+      return turno !== 2 || D.segundoTurno.indexOf(c.numero) !== -1;
     });
   }
 
   function partidoDe(numero) {
-    return numero.length >= 2 ? D.partidos[numero.slice(0, 2)] || null : null;
+    return D.partidos[numero] || null;
   }
 
-  function etapaAtual() {
-    return estado.etapas[estado.i];
-  }
-
-  function nomeVaga(etapa) {
-    return etapa.vaga ? etapa.vaga + 'ª vaga' : '';
-  }
-
-  function nomesVice(etapa, cand) {
-    var rotulos = etapa.cargo.rotulosVice || [];
-    if (cand.suplentes) {
-      return cand.suplentes.map(function (n, k) { return { rotulo: rotulos[k] || 'Suplente', nome: n }; });
-    }
-    if (cand.vice) return [{ rotulo: rotulos[0] || 'Vice', nome: cand.vice.nome, dados: cand.vice }];
-    return [];
+  function buscar(numero) {
+    return estado.candidatos.filter(function (c) { return c.numero === numero; })[0] || null;
   }
 
   /*
-   * Interpreta o que está digitado na etapa atual.
+   * Interpreta o que está digitado.
    * "pronto" indica que a tecla CONFIRMA registra o voto.
    */
-  function analisar(etapa) {
-    var dig = estado.digitos;
+  function analisar() {
     if (estado.branco) return { tipo: 'branco', pronto: true };
-
-    if (dig.length < etapa.digitos) {
-      if (etapa.proporcional && dig.length >= 2) {
-        var p = partidoDe(dig);
-        // Só os 2 dígitos do partido + CONFIRMA = voto de legenda
-        if (p) return { tipo: 'parcial', partido: p, pronto: dig.length === 2 };
-      }
-      return { tipo: 'digitando', pronto: false };
-    }
-
-    if (etapa.vaga === 2) {
-      var primeira = estado.votos.filter(function (v) {
-        return v.cargoId === etapa.id && v.vaga === 1;
-      })[0];
-      // Mesmo candidato nas duas vagas: o segundo voto é anulado
-      if (primeira && primeira.numero === dig && primeira.tipo === 'nominal') {
-        return { tipo: 'repetido', pronto: true };
-      }
-    }
-
-    var cand = etapa.mapa[dig];
-    if (cand) return { tipo: 'nominal', candidato: cand, partido: partidoDe(dig), pronto: true };
-
-    if (etapa.proporcional) {
-      var p2 = partidoDe(dig);
-      if (p2) return { tipo: 'legenda', partido: p2, pronto: true };
-    }
+    if (estado.digitos.length < CARGO.digitos) return { tipo: 'digitando', pronto: false };
+    var cand = buscar(estado.digitos);
+    if (cand) return { tipo: 'nominal', candidato: cand, partido: partidoDe(cand.numero), pronto: true };
     return { tipo: 'nulo', pronto: true };
   }
 
@@ -127,9 +74,9 @@
     });
   }
 
-  function caixas(etapa, mostrarCursor) {
+  function caixas(mostrarCursor) {
     var h = '';
-    for (var k = 0; k < etapa.digitos; k++) {
+    for (var k = 0; k < CARGO.digitos; k++) {
       var d = estado.digitos[k];
       var atual = mostrarCursor && k === estado.digitos.length;
       h += '<span class="caixa' + (atual ? ' atual' : '') + '">' + (d ? esc(d) : '') + '</span>';
@@ -147,41 +94,34 @@
       esc(legenda) + '</figcaption></figure>';
   }
 
-  function telaVotacao() {
-    var etapa = etapaAtual();
-    var r = analisar(etapa);
+  function telaVotacao(r) {
     var aviso = estado.aviso;
 
     var h = '<div class="tv">';
     h += '<div class="tv-corpo"><div class="tv-esq">';
-    h += '<div class="tv-seu-voto"' + (r.pronto && r.tipo !== 'parcial' ? '' : ' style="visibility:hidden"') + '>SEU VOTO PARA</div>';
-    h += '<div class="tv-cargo">' + esc(etapa.titulo) +
-      (etapa.vaga ? '<span class="tv-vaga">' + esc(nomeVaga(etapa)) + '</span>' : '') + '</div>';
+    h += '<div class="tv-seu-voto"' + (r.pronto ? '' : ' style="visibility:hidden"') + '>SEU VOTO PARA</div>';
+    h += '<div class="tv-cargo">' + esc(CARGO.titulo) + '</div>';
 
     if (r.tipo !== 'branco') {
       h += '<div class="tv-numero"><span class="tv-rotulo">Número:</span><span class="tv-caixas">' +
-        caixas(etapa, !aviso && estado.digitos.length < etapa.digitos) + '</span></div>';
+        caixas(!aviso && estado.digitos.length < CARGO.digitos) + '</span></div>';
     }
 
     if (r.tipo === 'nominal') {
       h += '<div class="tv-dados">';
       h += linha('Nome', r.candidato.nome);
       h += linha('Partido', r.partido ? r.partido.sigla : '');
-      nomesVice(etapa, r.candidato).forEach(function (v) { h += linha(v.rotulo, v.nome); });
+      if (r.candidato.vice) h += linha(CARGO.tituloVice, r.candidato.vice.nome);
       h += '</div>';
-    } else if ((r.tipo === 'parcial' || r.tipo === 'legenda') && !aviso) {
-      h += '<div class="tv-dados">' + linha('Partido', r.partido.sigla + ' – ' + r.partido.nome) + '</div>';
     }
     h += '</div>';
 
-    // fotos
+    // fotos do candidato e do vice
     h += '<div class="tv-dir">';
     if (r.tipo === 'nominal') {
       var c = r.candidato;
-      h += foto(G.foto(c.nome, c), etapa.titulo, 'tv-foto-titular');
-      if (c.vice && etapa.cargo.fotoVice) {
-        h += foto(G.foto(c.vice.nome, c.vice), (etapa.cargo.rotulosVice || ['Vice'])[0], 'tv-foto-vice');
-      }
+      h += foto(G.foto(c.nome, c), CARGO.titulo, 'tv-foto-titular');
+      if (c.vice) h += foto(G.foto(c.vice.nome, c.vice), CARGO.tituloVice, 'tv-foto-vice');
     }
     h += '</div></div>';
 
@@ -193,12 +133,6 @@
       h += '<div class="tv-msg-grande pisca">VOTO EM BRANCO</div>';
     } else if (r.tipo === 'nulo') {
       h += '<div class="tv-msg-media">NÚMERO ERRADO</div><div class="tv-msg-grande pisca">VOTO NULO</div>';
-    } else if (r.tipo === 'repetido') {
-      h += '<div class="tv-msg-media">CANDIDATO JÁ ESCOLHIDO NA 1ª VAGA</div><div class="tv-msg-grande pisca">VOTO NULO</div>';
-    } else if (r.tipo === 'legenda') {
-      h += '<div class="tv-msg-media">NÚMERO ERRADO</div><div class="tv-msg-grande pisca">VOTO DE LEGENDA</div>';
-    } else if (r.tipo === 'parcial' && r.pronto) {
-      h += '<div class="tv-msg-media">VOTO DE LEGENDA</div>';
     }
     h += '</div>';
 
@@ -210,11 +144,11 @@
       '<div class="tv-rod-linha"><b>LARANJA</b> para REINICIAR este voto</div></div>';
 
     h += '</div>';
-    return { html: h, r: r };
+    return h;
   }
 
   function render() {
-    var texto = '';
+    var texto;
     if (estado.fase === 'fim') {
       el.tela.innerHTML = '<div class="tv-fim">FIM</div>';
       texto = 'FIM. Votação concluída.';
@@ -223,9 +157,9 @@
         TEMPO_GRAVANDO + 'ms"></span></div></div>';
       texto = 'Gravando o voto.';
     } else {
-      var t = telaVotacao();
-      el.tela.innerHTML = t.html;
-      texto = descrever(t.r);
+      var r = analisar();
+      el.tela.innerHTML = telaVotacao(r);
+      texto = descrever(r);
     }
     el.anuncio.textContent = texto;
     el.btnNova.hidden = estado.fase !== 'fim';
@@ -234,31 +168,28 @@
 
   // Texto para leitores de tela
   function descrever(r) {
-    var etapa = etapaAtual();
-    var base = etapa.titulo + (etapa.vaga ? ', ' + nomeVaga(etapa) : '') + '. ';
+    var base = CARGO.titulo + '. ';
     if (estado.aviso === 'branco-com-numero') return base + 'Para votar em branco o campo de voto deve estar vazio. Aperte CORRIGE.';
     if (r.tipo === 'branco') return base + 'Voto em branco. Aperte CONFIRMA.';
-    var num = estado.digitos ? 'Número ' + estado.digitos.split('').join(' ') + '. ' : 'Digite ' + etapa.digitos + ' números. ';
-    if (r.tipo === 'nominal') return base + num + r.candidato.nome + ', ' + (r.partido ? r.partido.sigla : '') + '. Aperte CONFIRMA.';
+    var num = estado.digitos ? 'Número ' + estado.digitos.split('').join(' ') + '. ' : 'Digite ' + CARGO.digitos + ' números. ';
+    if (r.tipo === 'nominal') {
+      return base + num + r.candidato.nome + ', ' + (r.partido ? r.partido.sigla : '') +
+        (r.candidato.vice ? '. ' + CARGO.tituloVice + ': ' + r.candidato.vice.nome : '') + '. Aperte CONFIRMA.';
+    }
     if (r.tipo === 'nulo') return base + num + 'Número errado. Voto nulo.';
-    if (r.tipo === 'repetido') return base + num + 'Candidato já escolhido na 1ª vaga. Voto nulo.';
-    if (r.tipo === 'legenda') return base + num + 'Número errado. Voto de legenda para ' + r.partido.sigla + '.';
-    if (r.tipo === 'parcial') return base + num + 'Partido ' + r.partido.sigla + '.' + (r.pronto ? ' Voto de legenda.' : '');
     return base + num;
   }
 
   /* ---------- ações das teclas ---------- */
 
   function digito(d) {
-    if (estado.fase !== 'votando' || estado.branco || estado.aviso) return;
-    var etapa = etapaAtual();
-    if (estado.digitos.length >= etapa.digitos) return;
+    if (estado.branco || estado.aviso) return;
+    if (estado.digitos.length >= CARGO.digitos) return;
     estado.digitos += d;
     render();
   }
 
   function branco() {
-    if (estado.fase !== 'votando') return;
     if (estado.digitos.length > 0) {
       estado.aviso = 'branco-com-numero';
     } else {
@@ -268,40 +199,21 @@
   }
 
   function corrige() {
-    if (estado.fase !== 'votando') return;
     estado.digitos = '';
     estado.branco = false;
     estado.aviso = null;
     render();
   }
 
-  // Retorna true quando o voto foi registrado (a confirmação tem som próprio).
   function confirma() {
-    if (estado.fase !== 'votando' || estado.aviso) return false;
-    var etapa = etapaAtual();
-    var r = analisar(etapa);
-    if (!r.pronto) return false;
+    if (estado.aviso) return;
+    var r = analisar();
+    if (!r.pronto) return;
 
-    var voto = { cargoId: etapa.id, titulo: etapa.titulo, vaga: etapa.vaga, numero: estado.digitos };
-    if (r.tipo === 'branco') voto.tipo = 'branco';
-    else if (r.tipo === 'nominal') { voto.tipo = 'nominal'; voto.candidato = r.candidato; voto.partido = r.partido; }
-    else if (r.tipo === 'parcial' || r.tipo === 'legenda') { voto.tipo = 'legenda'; voto.partido = r.partido; }
-    else { voto.tipo = 'nulo'; voto.repetido = r.tipo === 'repetido'; }
-    estado.votos.push(voto);
-
-    estado.digitos = '';
-    estado.branco = false;
-    estado.aviso = null;
-
-    if (estado.i < estado.etapas.length - 1) {
-      estado.i++;
-      Som.confirma();
-      render();
-      return true;
-    }
-
+    estado.voto = { tipo: r.tipo, numero: estado.digitos, candidato: r.candidato || null, partido: r.partido || null };
     estado.fase = 'gravando';
     render();
+
     var turnoAtual = estado.turno;
     setTimeout(function () {
       // ignora se o eleitor trocou de turno enquanto gravava
@@ -311,7 +223,6 @@
       render();
       vibrar([60, 40, 60, 40, 220]);
     }, TEMPO_GRAVANDO);
-    return false;
   }
 
   function vibrar(padrao) {
@@ -325,12 +236,11 @@
     // Depois do voto gravado as teclas ficam inativas, como na urna real
     if (estado.fase !== 'votando') return;
     vibrar(8);
-    var somProprio = false;
+    Som.tecla();
     if (/^\d$/.test(tecla)) digito(tecla);
     else if (tecla === 'branco') branco();
     else if (tecla === 'corrige') corrige();
-    else if (tecla === 'confirma') somProprio = confirma();
-    if (!somProprio) Som.tecla();
+    else if (tecla === 'confirma') confirma();
   }
 
   function animarTecla(tecla) {
@@ -344,12 +254,11 @@
 
   function iniciar(turno) {
     estado.turno = turno || estado.turno;
-    estado.etapas = montarEtapas(estado.turno);
-    estado.i = 0;
+    estado.candidatos = candidatosDoTurno(estado.turno);
     estado.digitos = '';
     estado.branco = false;
     estado.aviso = null;
-    estado.votos = [];
+    estado.voto = null;
     estado.fase = 'votando';
 
     var info = D.turnosInfo[estado.turno];
@@ -361,51 +270,33 @@
     render();
   }
 
-  /* ---------- cola (lista de candidatos) ---------- */
+  /* ---------- cola (lista de candidatos) e resumo ---------- */
 
   function montarCola() {
-    var etapas = montarEtapas(estado.turno);
-    var vistos = {};
-    var h = '<p class="cola-intro">Partidos e candidatos <strong>fictícios</strong>, só para treinar. ' +
-      'Ordem de votação do ' + esc(D.turnosInfo[estado.turno].nome) + ':</p>';
-    h += '<ol class="cola-ordem">' + etapas.map(function (e) {
-      return '<li>' + esc(e.titulo) + (e.vaga ? ' (' + esc(nomeVaga(e)) + ')' : '') + ' <small>' + e.digitos + ' dígitos</small></li>';
-    }).join('') + '</ol>';
-
-    etapas.forEach(function (e) {
-      if (vistos[e.id]) return;
-      vistos[e.id] = true;
-      h += '<section class="cola-cargo"><h3>' + esc(e.titulo) + (e.cargo.proporcional ? ' <small>ou só os 2 dígitos do partido (legenda)</small>' : '') +
-        (e.id === 'senador' && estado.turno === 1 ? ' <small>escolha dois diferentes</small>' : '') + '</h3><ul>';
-      e.candidatos.forEach(function (c) {
-        var p = partidoDe(c.numero);
-        var extras = nomesVice(e, c).map(function (v) { return esc(v.rotulo) + ': ' + esc(v.nome); }).join(' · ');
-        h += '<li><img src="' + G.foto(c.nome, c) + '" alt=""><span class="cola-num">' + esc(c.numero) + '</span>' +
-          '<span class="cola-nome">' + esc(c.nome) + '<small>' + (p ? esc(p.sigla) : '') + (extras ? ' · ' + extras : '') + '</small></span></li>';
-      });
-      h += '</ul></section>';
-    });
-
-    h += '<section class="cola-cargo"><h3>Partidos</h3><ul class="cola-partidos">';
-    Object.keys(D.partidos).forEach(function (n) {
-      h += '<li><span class="cola-num">' + esc(n) + '</span><span class="cola-nome">' + esc(D.partidos[n].sigla) + '<small>' + esc(D.partidos[n].nome) + '</small></span></li>';
+    var h = '<p class="cola-intro">Candidatos <strong>fictícios</strong> a ' + esc(CARGO.titulo) +
+      ' no ' + esc(D.turnosInfo[estado.turno].nome) + ', só para treinar. Digite os ' + CARGO.digitos + ' números do candidato.</p>';
+    h += '<section class="cola-cargo"><h3>' + esc(CARGO.titulo) + '</h3><ul>';
+    estado.candidatos.forEach(function (c) {
+      var p = partidoDe(c.numero);
+      h += '<li><img src="' + G.foto(c.nome, c) + '" alt=""><span class="cola-num">' + esc(c.numero) + '</span>' +
+        '<span class="cola-nome">' + esc(c.nome) + '<small>' + (p ? esc(p.sigla) : '') +
+        (c.vice ? ' · Vice: ' + esc(c.vice.nome) : '') + '</small></span></li>';
     });
     h += '</ul></section>';
     el.conteudoCola.innerHTML = h;
   }
 
   function montarResumo() {
-    var h = '<ol class="resumo-lista">';
-    estado.votos.forEach(function (v) {
-      var desc;
-      if (v.tipo === 'nominal') desc = '<b>' + esc(v.numero) + '</b> ' + esc(v.candidato.nome) + ' <small>' + esc(v.partido ? v.partido.sigla : '') + '</small>';
-      else if (v.tipo === 'legenda') desc = 'Voto de legenda <small>' + esc(v.partido.sigla) + ' – ' + esc(v.partido.nome) + '</small>';
-      else if (v.tipo === 'branco') desc = 'Voto em branco';
-      else desc = 'Voto nulo' + (v.repetido ? ' <small>(candidato repetido)</small>' : v.numero ? ' <small>(' + esc(v.numero) + ')</small>' : '');
-      h += '<li><span class="resumo-cargo">' + esc(v.titulo) + (v.vaga ? ' – ' + v.vaga + 'ª vaga' : '') + '</span><span class="resumo-voto">' + desc + '</span></li>';
-    });
-    h += '</ol>';
-    el.conteudoResumo.innerHTML = h;
+    var v = estado.voto;
+    var desc = '';
+    if (!v) desc = '—';
+    else if (v.tipo === 'nominal') {
+      desc = '<b>' + esc(v.numero) + '</b> ' + esc(v.candidato.nome) + ' <small>' + esc(v.partido ? v.partido.sigla : '') +
+        (v.candidato.vice ? ' · Vice: ' + esc(v.candidato.vice.nome) : '') + '</small>';
+    } else if (v.tipo === 'branco') desc = 'Voto em branco';
+    else desc = 'Voto nulo <small>(' + esc(v.numero) + ')</small>';
+    el.conteudoResumo.innerHTML = '<p class="resumo-voto"><span class="resumo-cargo">' + esc(CARGO.titulo) +
+      ' · ' + esc(D.turnosInfo[estado.turno].nome) + '</span>' + desc + '</p>';
   }
 
   function abrir(dlg) {
@@ -469,7 +360,7 @@
   Array.prototype.forEach.call(el.botoesTurno, function (b) {
     b.addEventListener('click', function () {
       var t = Number(b.getAttribute('data-turno'));
-      if (t !== estado.turno || estado.votos.length || estado.digitos) iniciar(t);
+      if (t !== estado.turno || estado.voto || estado.digitos || estado.branco) iniciar(t);
       if (el.dlgCola.open) montarCola();
     });
   });

@@ -1,50 +1,38 @@
 /*
- * Efeitos sonoros da urna, sintetizados com a Web Audio API
- * (nenhum arquivo de áudio é necessário).
+ * Sons da urna.
  *
- *  - tecla(): "bip" curto de cada tecla pressionada
- *  - fim():   o famoso "pi-pi-pi-pi-pi-piiiii" do fim da votação
- *
- * Os parâmetros ficam em SOM para facilitar o ajuste fino.
+ *  - tecla(): toque mecânico da tecla (sintetizado com a Web Audio API,
+ *             mesmo timbre usado pelo minhacolinha.com)
+ *  - fim():   o "tirirí" da urna ao terminar a votação (som/urna-confirma.mp3,
+ *             obtido do minhacolinha.com). Se o arquivo não puder ser tocado,
+ *             o mesmo som é sintetizado: tom puro alternando 2204 Hz e 2307 Hz
+ *             a cada ~95 ms, por 0,71 s.
  */
 (function () {
   'use strict';
 
-  var SOM = {
-    frequencia: 1150,   // Hz do bip do alto-falante (buzzer) da urna
-    volume: 0.16,
-    bipTecla: 0.085,    // s
-    curto: 0.055,       // s de cada bip da sequência
-    intervalo: 0.035,   // s de silêncio entre os bips da sequência
-    longo: 0.68         // s do bip final
-  };
+  var ARQUIVO_FIM = 'som/urna-confirma.mp3';
 
   var ctx = null;
-  var saida = null;
   var ruido = null;
   var ligado = true;
+  var audioFim = null;
 
   try {
     ligado = localStorage.getItem('urna-som') !== 'off';
   } catch (e) { /* armazenamento indisponível: som fica ligado */ }
+
+  try {
+    audioFim = new Audio(ARQUIVO_FIM);
+    audioFim.preload = 'auto';
+  } catch (e) { audioFim = null; }
 
   function contexto() {
     if (!ctx) {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
       ctx = new AC();
-
-      var compressor = ctx.createDynamicsCompressor();
-      compressor.threshold.value = -18;
-      compressor.ratio.value = 4;
-
-      saida = ctx.createGain();
-      saida.gain.value = 1;
-      saida.connect(compressor);
-      compressor.connect(ctx.destination);
-
-      // ruído branco curto, usado no "clique" mecânico da tecla
-      ruido = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.05), ctx.sampleRate);
+      ruido = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.03), ctx.sampleRate);
       var dados = ruido.getChannelData(0);
       for (var i = 0; i < dados.length; i++) dados[i] = Math.random() * 2 - 1;
     }
@@ -52,73 +40,75 @@
     return ctx;
   }
 
-  // Um bip de onda quadrada filtrada, parecido com o buzzer da urna.
-  function bip(inicio, duracao, volume) {
+  // "Toc" da tecla: grave curto + estalo de ruído filtrado
+  function toque() {
+    var t = ctx.currentTime;
+
     var osc = ctx.createOscillator();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(SOM.frequencia, inicio);
-
-    var filtro = ctx.createBiquadFilter();
-    filtro.type = 'lowpass';
-    filtro.frequency.value = 3600;
-    filtro.Q.value = 0.7;
-
     var ganho = ctx.createGain();
-    var v = volume == null ? SOM.volume : volume;
-    ganho.gain.setValueAtTime(0.0001, inicio);
-    ganho.gain.linearRampToValueAtTime(v, inicio + 0.004);
-    ganho.gain.setValueAtTime(v, inicio + Math.max(duracao - 0.012, 0.005));
-    ganho.gain.linearRampToValueAtTime(0.0001, inicio + duracao);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.exponentialRampToValueAtTime(120, t + 0.05);
+    ganho.gain.setValueAtTime(0, t);
+    ganho.gain.linearRampToValueAtTime(0.22, t + 0.004);
+    ganho.gain.exponentialRampToValueAtTime(0.0001, t + 0.075);
+    osc.connect(ganho);
+    ganho.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.08);
 
-    osc.connect(filtro);
-    filtro.connect(ganho);
-    ganho.connect(saida);
-    osc.start(inicio);
-    osc.stop(inicio + duracao + 0.03);
-  }
-
-  function clique(inicio) {
     var fonte = ctx.createBufferSource();
     fonte.buffer = ruido;
     var filtro = ctx.createBiquadFilter();
-    filtro.type = 'bandpass';
-    filtro.frequency.value = 2400;
-    filtro.Q.value = 1.4;
-    var ganho = ctx.createGain();
-    ganho.gain.setValueAtTime(0.09, inicio);
-    ganho.gain.exponentialRampToValueAtTime(0.0001, inicio + 0.018);
+    filtro.type = 'lowpass';
+    filtro.frequency.value = 1400;
+    var ganhoRuido = ctx.createGain();
+    ganhoRuido.gain.setValueAtTime(0.12, t);
+    ganhoRuido.gain.exponentialRampToValueAtTime(0.0001, t + 0.018);
     fonte.connect(filtro);
-    filtro.connect(ganho);
-    ganho.connect(saida);
-    fonte.start(inicio);
-    fonte.stop(inicio + 0.03);
+    filtro.connect(ganhoRuido);
+    ganhoRuido.connect(ctx.destination);
+    fonte.start(t);
+    fonte.stop(t + 0.03);
   }
 
-  function sequencia(qtdCurtos, duracaoFinal) {
-    var t = ctx.currentTime + 0.01;
-    for (var i = 0; i < qtdCurtos; i++) {
-      bip(t, SOM.curto);
-      t += SOM.curto + SOM.intervalo;
-    }
-    bip(t, duracaoFinal);
-  }
-
-  function tocar(fn) {
-    if (!ligado) return;
+  // Reserva: reproduz o som da urna com os mesmos tons do arquivo
+  function fimSintetizado() {
     if (!contexto()) return;
-    fn();
+    var t = ctx.currentTime + 0.01;
+    var passo = 0.095;
+    var osc = ctx.createOscillator();
+    var ganho = ctx.createGain();
+    osc.type = 'sine';
+    ganho.gain.setValueAtTime(0, t);
+    ganho.gain.linearRampToValueAtTime(0.2, t + 0.004);
+    for (var i = 0; i < 8; i++) {
+      osc.frequency.setValueAtTime(i % 2 === 0 ? 2204 : 2307, t + i * passo);
+      if (i > 0) ganho.gain.setValueAtTime(i % 2 === 0 ? 0.2 : 0.14, t + i * passo);
+    }
+    ganho.gain.setValueAtTime(0.14, t + 0.7);
+    ganho.gain.linearRampToValueAtTime(0, t + 0.715);
+    osc.connect(ganho);
+    ganho.connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.73);
   }
 
   window.SomUrna = {
     tecla: function () {
-      tocar(function () {
-        var t = ctx.currentTime + 0.005;
-        clique(t);
-        bip(t, SOM.bipTecla);
-      });
+      if (!ligado || !contexto()) return;
+      toque();
     },
     fim: function () {
-      tocar(function () { sequencia(6, SOM.longo); });
+      if (!ligado) return;
+      if (!audioFim) { fimSintetizado(); return; }
+      try {
+        audioFim.currentTime = 0;
+        var p = audioFim.play();
+        if (p && typeof p.catch === 'function') p.catch(fimSintetizado);
+      } catch (e) {
+        fimSintetizado();
+      }
     },
     // Chamado no primeiro toque para "destravar" o áudio no celular.
     preparar: function () {
@@ -128,6 +118,7 @@
     alternar: function () {
       ligado = !ligado;
       try { localStorage.setItem('urna-som', ligado ? 'on' : 'off'); } catch (e) { /* ignora */ }
+      if (!ligado && audioFim) { try { audioFim.pause(); } catch (e) { /* ignora */ } }
       return ligado;
     }
   };

@@ -1,41 +1,54 @@
 /*
- * Dados da eleição simulada: voto para Presidente da República.
+ * Dados da simulação: 2º turno da eleição para Presidente da República
+ * (25 de outubro de 2026).
  *
- * TODOS os partidos e candidatos abaixo são FICTÍCIOS e servem apenas para
- * treinar o uso da urna. Para mudar a simulação basta editar este arquivo.
- *
- * Campos opcionais de cada candidato (e do vice):
- *  - g:        'f' ou 'm' (usado só para desenhar a foto ilustrativa)
- *  - grisalho: true para cabelo grisalho na foto
+ * Nomes de urna, partidos e números conforme o registro no TSE.
+ * Fotos: divulgação oficial do TSE (DivulgaCandContas), obtidas via minhacolinha.com.
+ * Os candidatos aparecem em ordem numérica.
  */
 window.DADOS_ELEICAO = {
+  turno: '2º turno',
+  data: '25 de outubro de 2026',
+
   cargo: {
     titulo: 'Presidente',
     tituloVice: 'Vice-Presidente',
     digitos: 2
   },
 
-  turnosInfo: {
-    1: { nome: '1º turno', data: '4 de outubro de 2026' },
-    2: { nome: '2º turno', data: '25 de outubro de 2026' }
-  },
-
-  partidos: {
-    '24': { sigla: 'PIA', nome: 'Partido do Ipê Amarelo' },
-    '37': { sigla: 'PSV', nome: 'Partido Serra Verde' },
-    '42': { sigla: 'PRA', nome: 'Partido Rio Azul' },
-    '61': { sigla: 'PTF', nome: 'Partido Terra Firme' },
-    '86': { sigla: 'PLC', nome: 'Partido Lua Cheia' }
+  // Rodapé da tela da urna (mesmos valores fictícios do modo de treinamento do TSE)
+  secao: {
+    municipio: '99999 - Minha Cidade',
+    zona: '9999',
+    secao: '9999'
   },
 
   candidatos: [
-    { numero: '24', nome: 'Helena Duarte', g: 'f', vice: { nome: 'Rogério Matos', g: 'm', grisalho: true } },
-    { numero: '37', nome: 'Augusto Ferraz', g: 'm', grisalho: true, vice: { nome: 'Cláudia Rezende', g: 'f' } },
-    { numero: '42', nome: 'Beatriz Quintela', g: 'f', vice: { nome: 'Otávio Nunes', g: 'm' } },
-    { numero: '61', nome: 'Carlos Menezes', g: 'm', vice: { nome: 'Luíza Prado', g: 'f', grisalho: true } },
-    { numero: '86', nome: 'Joana Bittencourt', g: 'f', vice: { nome: 'Sérgio Valença', g: 'm' } }
-  ],
-
-  // Números dos dois candidatos que disputam o 2º turno
-  segundoTurno: ['24', '37']
+    {
+      numero: '13',
+      nome: 'LULA',
+      nomeCompleto: 'Luiz Inácio Lula da Silva',
+      partido: 'PT',
+      foto: 'img/candidatos/13-lula.jpg',
+      vice: {
+        nome: 'GERALDO ALCKMIN',
+        nomeCompleto: 'Geraldo José Rodrigues Alckmin Filho',
+        partido: 'PSB',
+        foto: 'img/candidatos/13-vice-geraldo-alckmin.jpg'
+      }
+    },
+    {
+      numero: '22',
+      nome: 'FLAVIO BOLSONARO',
+      nomeCompleto: 'Flávio Nantes Bolsonaro',
+      partido: 'PL',
+      foto: 'img/candidatos/22-flavio-bolsonaro.jpg',
+      vice: {
+        nome: 'ALFREDO GASPAR',
+        nomeCompleto: 'Alfredo Gaspar de Mendonça Neto',
+        partido: 'PL',
+        foto: 'img/candidatos/22-vice-alfredo-gaspar.jpg'
+      }
+    }
+  ]
 };

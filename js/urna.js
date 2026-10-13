@@ -1,5 +1,6 @@
 /*
- * Lógica da urna (voto para Presidente): estados, desenho da tela e teclado.
+ * Lógica da urna (voto para Presidente, 2º turno): estados, telas e teclado.
+ * As telas seguem o layout da urna no modo de treinamento do TSE.
  */
 (function () {
   'use strict';
@@ -21,37 +22,23 @@
     dlgCola: $('#dlg-cola'),
     dlgResumo: $('#dlg-resumo'),
     conteudoCola: $('#cola-conteudo'),
-    conteudoResumo: $('#resumo-conteudo'),
-    dataTurno: $('#data-turno'),
-    botoesTurno: document.querySelectorAll('[data-turno]')
+    conteudoResumo: $('#resumo-conteudo')
   };
 
-  var TEMPO_GRAVANDO = 1500; // ms da barra de gravação antes do "FIM"
-
   var estado = {
-    turno: 1,
-    candidatos: [],
     digitos: '',
     branco: false,
     aviso: null,
     voto: null,
-    fase: 'votando' // votando | gravando | fim
+    fase: 'votando' // votando | fim
   };
+
+  var relogio = null;
 
   /* ---------- dados ---------- */
 
-  function candidatosDoTurno(turno) {
-    return D.candidatos.filter(function (c) {
-      return turno !== 2 || D.segundoTurno.indexOf(c.numero) !== -1;
-    });
-  }
-
-  function partidoDe(numero) {
-    return D.partidos[numero] || null;
-  }
-
   function buscar(numero) {
-    return estado.candidatos.filter(function (c) { return c.numero === numero; })[0] || null;
+    return D.candidatos.filter(function (c) { return c.numero === numero; })[0] || null;
   }
 
   /*
@@ -62,11 +49,11 @@
     if (estado.branco) return { tipo: 'branco', pronto: true };
     if (estado.digitos.length < CARGO.digitos) return { tipo: 'digitando', pronto: false };
     var cand = buscar(estado.digitos);
-    if (cand) return { tipo: 'nominal', candidato: cand, partido: partidoDe(cand.numero), pronto: true };
+    if (cand) return { tipo: 'nominal', candidato: cand, pronto: true };
     return { tipo: 'nulo', pronto: true };
   }
 
-  /* ---------- tela ---------- */
+  /* ---------- telas ---------- */
 
   function esc(texto) {
     return String(texto).replace(/[&<>"']/g, function (c) {
@@ -74,88 +61,95 @@
     });
   }
 
-  function caixas(mostrarCursor) {
+  var TREINAMENTO = '<div class="tv-treinamento">TREINAMENTO</div>';
+
+  function caixas() {
     var h = '';
     for (var k = 0; k < CARGO.digitos; k++) {
       var d = estado.digitos[k];
-      var atual = mostrarCursor && k === estado.digitos.length;
+      var atual = !estado.aviso && k === estado.digitos.length;
       h += '<span class="caixa' + (atual ? ' atual' : '') + '">' + (d ? esc(d) : '') + '</span>';
     }
     return h;
   }
 
   function linha(rotulo, valor) {
-    return '<div class="tv-linha"><span class="tv-rotulo">' + esc(rotulo) + ':</span>' +
+    return '<div class="tv-linha"><span class="tv-rotulo">' + esc(rotulo) + ':</span> ' +
       '<span class="tv-valor">' + esc(valor) + '</span></div>';
   }
 
-  function foto(src, legenda, classe) {
-    return '<figure class="tv-foto ' + (classe || '') + '"><img src="' + src + '" alt=""><figcaption>' +
-      esc(legenda) + '</figcaption></figure>';
-  }
-
   function telaVotacao(r) {
-    var aviso = estado.aviso;
-
-    var h = '<div class="tv">';
-    h += '<div class="tv-corpo"><div class="tv-esq">';
-    h += '<div class="tv-seu-voto"' + (r.pronto ? '' : ' style="visibility:hidden"') + '>SEU VOTO PARA</div>';
+    var h = '<div class="tv">' + TREINAMENTO;
+    if (r.pronto && !estado.aviso) h += '<div class="tv-seu-voto">SEU VOTO PARA</div>';
     h += '<div class="tv-cargo">' + esc(CARGO.titulo) + '</div>';
 
-    if (r.tipo !== 'branco') {
-      h += '<div class="tv-numero"><span class="tv-rotulo">Número:</span><span class="tv-caixas">' +
-        caixas(!aviso && estado.digitos.length < CARGO.digitos) + '</span></div>';
-    }
+    if (r.tipo !== 'branco') h += '<div class="tv-caixas">' + caixas() + '</div>';
 
-    if (r.tipo === 'nominal') {
-      h += '<div class="tv-dados">';
-      h += linha('Nome', r.candidato.nome);
-      h += linha('Partido', r.partido ? r.partido.sigla : '');
-      if (r.candidato.vice) h += linha(CARGO.tituloVice, r.candidato.vice.nome);
-      h += '</div>';
-    }
-    h += '</div>';
-
-    // fotos do candidato e do vice
-    h += '<div class="tv-dir">';
     if (r.tipo === 'nominal') {
       var c = r.candidato;
-      h += foto(G.foto(c.nome, c), CARGO.titulo, 'tv-foto-titular');
-      if (c.vice) h += foto(G.foto(c.vice.nome, c.vice), CARGO.tituloVice, 'tv-foto-vice');
+      h += '<div class="tv-dados">' +
+        linha('Nome', c.nome) +
+        linha('Partido', c.partido) +
+        (c.vice ? linha(CARGO.tituloVice, c.vice.nome) : '') +
+        '</div>';
+      h += '<div class="tv-fotos">' +
+        '<figure class="tv-foto"><img src="' + esc(c.foto) + '" alt=""><figcaption>' + esc(CARGO.titulo) + '</figcaption></figure>' +
+        (c.vice ? '<figure class="tv-foto tv-foto-vice"><img src="' + esc(c.vice.foto) + '" alt=""><figcaption>' + esc(CARGO.tituloVice) + '</figcaption></figure>' : '') +
+        '</div>';
     }
-    h += '</div></div>';
 
-    // mensagens centrais
-    h += '<div class="tv-centro">';
-    if (aviso === 'branco-com-numero') {
-      h += '<div class="tv-msg-texto">Para votar em BRANCO o campo de voto deve estar vazio.<br>Aperte CORRIGE para apagar o campo de voto.</div>';
+    if (estado.aviso === 'branco-com-numero') {
+      h += '<div class="tv-aviso">Para votar em BRANCO o campo de voto deve estar vazio.<br>Aperte CORRIGE para apagar o campo de voto.</div>';
     } else if (r.tipo === 'branco') {
-      h += '<div class="tv-msg-grande pisca">VOTO EM BRANCO</div>';
+      h += '<div class="tv-grande tv-branco pisca">VOTO EM BRANCO</div>';
     } else if (r.tipo === 'nulo') {
-      h += '<div class="tv-msg-media">NÚMERO ERRADO</div><div class="tv-msg-grande pisca">VOTO NULO</div>';
+      h += '<div class="tv-media tv-numero-errado">NÚMERO ERRADO</div><div class="tv-grande tv-nulo pisca">VOTO NULO</div>';
     }
-    h += '</div>';
 
-    // instruções do rodapé
-    var mostraRodape = r.pronto && !aviso;
-    h += '<div class="tv-rodape"' + (mostraRodape ? '' : ' style="visibility:hidden"') + '>' +
-      '<div>Aperte a tecla:</div>' +
-      '<div class="tv-rod-linha"><b>VERDE</b> para CONFIRMAR este voto</div>' +
-      '<div class="tv-rod-linha"><b>LARANJA</b> para REINICIAR este voto</div></div>';
+    if (r.pronto && !estado.aviso) {
+      h += '<div class="tv-rodape"><div>Aperte a tecla:</div>' +
+        '<div class="tv-rod-linha"><span>CONFIRMA</span> para CONFIRMAR este voto</div>' +
+        '<div class="tv-rod-linha"><span>CORRIGE</span> para REINICIAR este voto</div></div>';
+    }
+    return h + '</div>';
+  }
 
-    h += '</div>';
-    return h;
+  var DIAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+
+  function dois(n) { return (n < 10 ? '0' : '') + n; }
+
+  function dataHora() {
+    var d = new Date();
+    return DIAS[d.getDay()] + ' ' + dois(d.getDate()) + '/' + dois(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' +
+      dois(d.getHours()) + ':' + dois(d.getMinutes()) + ':' + dois(d.getSeconds());
+  }
+
+  var BATERIA = '<svg class="tv-bateria" viewBox="0 0 34 16" aria-hidden="true">' +
+    '<rect x="1" y="1" width="29" height="14" rx="1.5" fill="#173d17" stroke="#3dbb3d" stroke-width="1.8"/>' +
+    '<rect x="30.5" y="5" width="2.6" height="6" rx=".6" fill="#3dbb3d"/>' +
+    '<rect x="3.6" y="3.6" width="7" height="8.8" fill="#38b038"/><rect x="11.6" y="3.6" width="7" height="8.8" fill="#38b038"/>' +
+    '<rect x="19.6" y="3.6" width="7.8" height="8.8" fill="#38b038"/></svg>';
+
+  function telaFim() {
+    var s = D.secao;
+    return '<div class="tv tv-tela-fim">' +
+      '<div class="tv-data" id="tv-data">' + dataHora() + '</div>' + TREINAMENTO + BATERIA +
+      '<div class="tv-fim">FIM</div>' +
+      '<div class="tv-votou">VOTOU</div>' +
+      '<div class="tv-status">Município: ' + esc(s.municipio) + '<span>Zona: ' + esc(s.zona) + '</span><span>Seção: ' + esc(s.secao) + '</span></div>' +
+      '</div>';
   }
 
   function render() {
+    clearInterval(relogio);
     var texto;
     if (estado.fase === 'fim') {
-      el.tela.innerHTML = '<div class="tv-fim">FIM</div>';
-      texto = 'FIM. Votação concluída.';
-    } else if (estado.fase === 'gravando') {
-      el.tela.innerHTML = '<div class="tv-gravando"><div class="tv-barra"><span style="animation-duration:' +
-        TEMPO_GRAVANDO + 'ms"></span></div></div>';
-      texto = 'Gravando o voto.';
+      el.tela.innerHTML = telaFim();
+      texto = 'FIM. Votou.';
+      relogio = setInterval(function () {
+        var dt = document.getElementById('tv-data');
+        if (dt) dt.textContent = dataHora();
+      }, 1000);
     } else {
       var r = analisar();
       el.tela.innerHTML = telaVotacao(r);
@@ -173,8 +167,8 @@
     if (r.tipo === 'branco') return base + 'Voto em branco. Aperte CONFIRMA.';
     var num = estado.digitos ? 'Número ' + estado.digitos.split('').join(' ') + '. ' : 'Digite ' + CARGO.digitos + ' números. ';
     if (r.tipo === 'nominal') {
-      return base + num + r.candidato.nome + ', ' + (r.partido ? r.partido.sigla : '') +
-        (r.candidato.vice ? '. ' + CARGO.tituloVice + ': ' + r.candidato.vice.nome : '') + '. Aperte CONFIRMA.';
+      var c = r.candidato;
+      return base + num + c.nome + ', ' + c.partido + (c.vice ? '. ' + CARGO.tituloVice + ': ' + c.vice.nome : '') + '. Aperte CONFIRMA.';
     }
     if (r.tipo === 'nulo') return base + num + 'Número errado. Voto nulo.';
     return base + num;
@@ -190,11 +184,8 @@
   }
 
   function branco() {
-    if (estado.digitos.length > 0) {
-      estado.aviso = 'branco-com-numero';
-    } else {
-      estado.branco = true;
-    }
+    if (estado.digitos.length > 0) estado.aviso = 'branco-com-numero';
+    else estado.branco = true;
     render();
   }
 
@@ -205,24 +196,17 @@
     render();
   }
 
+  // Retorna true quando o voto foi registrado (o FIM tem som próprio)
   function confirma() {
-    if (estado.aviso) return;
+    if (estado.aviso) return false;
     var r = analisar();
-    if (!r.pronto) return;
-
-    estado.voto = { tipo: r.tipo, numero: estado.digitos, candidato: r.candidato || null, partido: r.partido || null };
-    estado.fase = 'gravando';
+    if (!r.pronto) return false;
+    estado.voto = { tipo: r.tipo, numero: estado.digitos, candidato: r.candidato || null };
+    estado.fase = 'fim';
+    Som.fim();
     render();
-
-    var turnoAtual = estado.turno;
-    setTimeout(function () {
-      // ignora se o eleitor trocou de turno enquanto gravava
-      if (estado.fase !== 'gravando' || estado.turno !== turnoAtual) return;
-      estado.fase = 'fim';
-      Som.fim();
-      render();
-      vibrar([60, 40, 60, 40, 220]);
-    }, TEMPO_GRAVANDO);
+    vibrar([60, 40, 60, 40, 220]);
+    return true;
   }
 
   function vibrar(padrao) {
@@ -233,14 +217,15 @@
 
   function pressionar(tecla) {
     Som.preparar();
-    // Depois do voto gravado as teclas ficam inativas, como na urna real
+    // Depois do FIM as teclas ficam inativas, como na urna real
     if (estado.fase !== 'votando') return;
     vibrar(8);
-    Som.tecla();
+    var somProprio = false;
     if (/^\d$/.test(tecla)) digito(tecla);
     else if (tecla === 'branco') branco();
     else if (tecla === 'corrige') corrige();
-    else if (tecla === 'confirma') confirma();
+    else if (tecla === 'confirma') somProprio = confirma();
+    if (!somProprio) Som.tecla();
   }
 
   function animarTecla(tecla) {
@@ -250,53 +235,37 @@
     setTimeout(function () { b.classList.remove('pressionada'); }, 120);
   }
 
-  /* ---------- nova votação / turno ---------- */
-
-  function iniciar(turno) {
-    estado.turno = turno || estado.turno;
-    estado.candidatos = candidatosDoTurno(estado.turno);
+  function iniciar() {
     estado.digitos = '';
     estado.branco = false;
     estado.aviso = null;
     estado.voto = null;
     estado.fase = 'votando';
-
-    var info = D.turnosInfo[estado.turno];
-    if (el.dataTurno && info) el.dataTurno.textContent = info.nome + ' · ' + info.data;
-    Array.prototype.forEach.call(el.botoesTurno, function (b) {
-      b.setAttribute('aria-pressed', String(Number(b.getAttribute('data-turno')) === estado.turno));
-    });
-    try { history.replaceState(null, '', estado.turno === 2 ? '#2turno' : location.pathname + location.search); } catch (e) { /* ignora */ }
     render();
   }
 
-  /* ---------- cola (lista de candidatos) e resumo ---------- */
+  /* ---------- colinha e resumo ---------- */
 
   function montarCola() {
-    var h = '<p class="cola-intro">Candidatos <strong>fictícios</strong> a ' + esc(CARGO.titulo) +
-      ' no ' + esc(D.turnosInfo[estado.turno].nome) + ', só para treinar. Digite os ' + CARGO.digitos + ' números do candidato.</p>';
-    h += '<section class="cola-cargo"><h3>' + esc(CARGO.titulo) + '</h3><ul>';
-    estado.candidatos.forEach(function (c) {
-      var p = partidoDe(c.numero);
-      h += '<li><img src="' + G.foto(c.nome, c) + '" alt=""><span class="cola-num">' + esc(c.numero) + '</span>' +
-        '<span class="cola-nome">' + esc(c.nome) + '<small>' + (p ? esc(p.sigla) : '') +
-        (c.vice ? ' · Vice: ' + esc(c.vice.nome) : '') + '</small></span></li>';
+    var h = '<p class="cola-intro">Eleição para <strong>Presidente da República</strong> · ' + esc(D.turno) + ' · ' + esc(D.data) + '.</p><ul class="cola-lista">';
+    D.candidatos.forEach(function (c) {
+      h += '<li><img src="' + esc(c.foto) + '" alt="Foto de ' + esc(c.nomeCompleto) + '"><span class="cola-num">' + esc(c.numero) + '</span>' +
+        '<span class="cola-nome">' + esc(c.nome) + '<small>' + esc(c.partido) + (c.vice ? ' · Vice: ' + esc(c.vice.nome) + ' (' + esc(c.vice.partido) + ')' : '') + '</small></span></li>';
     });
-    h += '</ul></section>';
+    h += '</ul>';
     el.conteudoCola.innerHTML = h;
   }
 
   function montarResumo() {
     var v = estado.voto;
-    var desc = '';
-    if (!v) desc = '—';
-    else if (v.tipo === 'nominal') {
-      desc = '<b>' + esc(v.numero) + '</b> ' + esc(v.candidato.nome) + ' <small>' + esc(v.partido ? v.partido.sigla : '') +
+    var desc = '—';
+    if (v && v.tipo === 'nominal') {
+      desc = '<b>' + esc(v.numero) + '</b> ' + esc(v.candidato.nome) + ' <small>' + esc(v.candidato.partido) +
         (v.candidato.vice ? ' · Vice: ' + esc(v.candidato.vice.nome) : '') + '</small>';
-    } else if (v.tipo === 'branco') desc = 'Voto em branco';
-    else desc = 'Voto nulo <small>(' + esc(v.numero) + ')</small>';
+    } else if (v && v.tipo === 'branco') desc = 'Voto em branco';
+    else if (v) desc = 'Voto nulo <small>(' + esc(v.numero) + ')</small>';
     el.conteudoResumo.innerHTML = '<p class="resumo-voto"><span class="resumo-cargo">' + esc(CARGO.titulo) +
-      ' · ' + esc(D.turnosInfo[estado.turno].nome) + '</span>' + desc + '</p>';
+      ' · ' + esc(D.turno) + '</span>' + desc + '</p>';
   }
 
   function abrir(dlg) {
@@ -312,6 +281,39 @@
   function algumDialogoAberto() {
     return el.dlgCola.open || el.dlgResumo.open;
   }
+
+  /* ---------- braille em relevo ---------- */
+
+  // Pontos (1 a 6) de cada letra; números usam o sinal de número (⠼) + letras a–j
+  var BRAILLE = {
+    '#': [3, 4, 5, 6],
+    a: [1], b: [1, 2], c: [1, 4], d: [1, 4, 5], e: [1, 5], f: [1, 2, 4], g: [1, 2, 4, 5], h: [1, 2, 5], i: [2, 4], j: [2, 4, 5],
+    m: [1, 3, 4], n: [1, 3, 4, 5], o: [1, 3, 5], r: [1, 2, 3, 5]
+  };
+  var DIGITO_LETRA = { 1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f', 7: 'g', 8: 'h', 9: 'i', 0: 'j' };
+  var POS = { 1: [0, 0], 2: [0, 1], 3: [0, 2], 4: [1, 0], 5: [1, 1], 6: [1, 2] };
+
+  // Medidas do padrão braille: 2,5 mm entre pontos e 6 mm entre celas
+  var PONTO = 2.5, CELA = 6, RAIO = 0.75, MARGEM = 1;
+
+  function svgBraille(texto) {
+    var celas = texto.split('').map(function (ch) { return BRAILLE[DIGITO_LETRA[ch] || ch] || []; });
+    var larg = (celas.length - 1) * CELA + PONTO + 2 * MARGEM;
+    var alt = 2 * PONTO + 2 * MARGEM;
+    var h = '<svg viewBox="0 0 ' + larg.toFixed(1) + ' ' + alt.toFixed(1) + '" aria-hidden="true">';
+    celas.forEach(function (pontos, i) {
+      pontos.forEach(function (p) {
+        var x = MARGEM + i * CELA + POS[p][0] * PONTO;
+        var y = MARGEM + POS[p][1] * PONTO;
+        h += '<circle cx="' + x.toFixed(2) + '" cy="' + y.toFixed(2) + '" r="' + RAIO + '"/>';
+      });
+    });
+    return h + '</svg>';
+  }
+
+  document.querySelectorAll('[data-braille]').forEach(function (span) {
+    span.innerHTML = svgBraille(span.getAttribute('data-braille'));
+  });
 
   /* ---------- eventos ---------- */
 
@@ -344,7 +346,7 @@
 
   el.btnCola.addEventListener('click', function () { montarCola(); abrir(el.dlgCola); });
   el.btnResumo.addEventListener('click', function () { montarResumo(); abrir(el.dlgResumo); });
-  el.btnNova.addEventListener('click', function () { iniciar(); });
+  el.btnNova.addEventListener('click', iniciar);
 
   document.querySelectorAll('[data-fechar]').forEach(function (b) {
     b.addEventListener('click', function () { fechar(b.closest('dialog')); });
@@ -357,14 +359,6 @@
     dlg.addEventListener('click', function (ev) { if (ev.target === dlg) fechar(dlg); });
   });
 
-  Array.prototype.forEach.call(el.botoesTurno, function (b) {
-    b.addEventListener('click', function () {
-      var t = Number(b.getAttribute('data-turno'));
-      if (t !== estado.turno || estado.voto || estado.digitos || estado.branco) iniciar(t);
-      if (el.dlgCola.open) montarCola();
-    });
-  });
-
   function atualizarBotaoSom() {
     el.btnSom.setAttribute('aria-pressed', String(Som.ligado));
     el.btnSom.querySelector('.rotulo-som').textContent = Som.ligado ? 'Som ligado' : 'Som desligado';
@@ -375,22 +369,9 @@
     if (Som.ligado) { Som.preparar(); Som.tecla(); }
   });
 
-  // brasões
   var brasao = G.brasaoUri();
   document.querySelectorAll('img[data-brasao]').forEach(function (img) { img.src = brasao; });
 
-  // Braille em relevo nas teclas, desenhado com pontos (não depende de fonte)
-  document.querySelectorAll('.braille').forEach(function (span) {
-    var bits = span.textContent.charCodeAt(0) - 0x2800;
-    if (bits < 0 || bits > 0x3f) return;
-    var pos = [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2]];
-    var pontos = pos.map(function (p, k) {
-      if (!(bits & (1 << k))) return '';
-      return '<circle cx="' + (1 + p[0] * 2.2) + '" cy="' + (1 + p[1] * 2.2) + '" r=".82" fill="currentColor"/>';
-    }).join('');
-    span.innerHTML = '<svg viewBox="0 0 4.2 6.4" aria-hidden="true">' + pontos + '</svg>';
-  });
-
   atualizarBotaoSom();
-  iniciar(/2turno/.test(location.hash) ? 2 : 1);
+  iniciar();
 })();

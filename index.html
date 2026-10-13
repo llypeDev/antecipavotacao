@@ -3,12 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Simulador de Votação para Presidente 2026 · Urna Eletrônica</title>
-  <meta name="description" content="Simulador não oficial da urna eletrônica das Eleições 2026: treine seu voto para Presidente na cabina de votação, com os sons da urna.">
+  <title>Simulador de Votação · Presidente 2º turno 2026 · Urna Eletrônica</title>
+  <meta name="description" content="Simulador não oficial da urna eletrônica para o 2º turno da eleição para Presidente (25/10/2026): treine seu voto na cabina de votação, com os sons da urna.">
   <meta name="theme-color" content="#3a2a1b">
-  <meta property="og:title" content="Simulador de Votação para Presidente 2026 · Urna Eletrônica">
+  <meta property="og:title" content="Simulador de Votação · Presidente 2º turno 2026">
   <meta property="og:description" content="Treine seu voto para Presidente na urna eletrônica antes de ir à seção eleitoral.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='14' width='60' height='36' rx='5' fill='%23d6d1c4'/%3E%3Crect x='7' y='19' width='30' height='26' rx='2' fill='%23111'/%3E%3Crect x='9' y='21' width='26' height='22' fill='%23f6f6f1'/%3E%3Crect x='41' y='19' width='17' height='26' rx='2' fill='%232b2c2e'/%3E%3Crect x='43' y='38' width='4' height='4' fill='%23eee'/%3E%3Crect x='48' y='38' width='4' height='4' fill='%23f08c1f'/%3E%3Crect x='53' y='37' width='4' height='6' fill='%232aa046'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='16' width='60' height='32' rx='3' fill='%23dcd6ca'/%3E%3Crect x='6' y='21' width='34' height='21' fill='%23fff' stroke='%239d978d'/%3E%3Crect x='43' y='19' width='16' height='6' fill='%23f4ede7'/%3E%3Crect x='43' y='25' width='16' height='20' fill='%233a3434'/%3E%3Crect x='44' y='40' width='4' height='3' fill='%23faf7f6'/%3E%3Crect x='49' y='40' width='4' height='3' fill='%23e69855'/%3E%3Crect x='54' y='39' width='4' height='4' fill='%234dcd86'/%3E%3C/svg%3E">
+  <link rel="preload" href="som/urna-confirma.mp3" as="audio" type="audio/mpeg">
   <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
@@ -44,49 +45,45 @@
   <div class="layout">
     <header class="etiqueta">
       <div class="etiqueta-papel">
-        <h1>Simulador de Votação <span>Presidente 2026</span></h1>
-        <p id="data-turno" class="etiqueta-data">1º turno · 4 de outubro de 2026</p>
-        <div class="turnos" role="group" aria-label="Escolher turno">
-          <button type="button" data-turno="1" aria-pressed="true">1º turno</button>
-          <button type="button" data-turno="2" aria-pressed="false">2º turno</button>
-        </div>
+        <h1>Simulador de Votação <span>Presidente</span></h1>
+        <p class="etiqueta-data"><strong>2º turno</strong> · 25 de outubro de 2026</p>
       </div>
     </header>
 
     <main class="palco">
       <div class="urna" id="urna">
-        <div class="urna-corpo">
-          <div class="urna-moldura">
+        <div class="urna-traseira" aria-hidden="true"></div>
+
+        <div class="urna-frente">
+          <div class="urna-tela-moldura">
             <div class="tela" id="tela"></div>
           </div>
 
-          <div class="urna-placa">
-            <div class="teclado">
-              <div class="teclado-topo">
-                <img data-brasao alt="">
-                <span>JUSTIÇA<br>ELEITORAL</span>
-              </div>
+          <div class="urna-terminal">
+            <div class="urna-rotulo">
+              <img data-brasao alt="">
+              <span>JUSTIÇA<br>ELEITORAL</span>
+            </div>
 
-              <div class="teclas-num">
-                <button type="button" class="tecla tecla-num" data-tecla="1" aria-label="1"><span class="digito">1</span><span class="braille">⠁</span></button>
-                <button type="button" class="tecla tecla-num" data-tecla="2" aria-label="2"><span class="digito">2</span><span class="braille">⠃</span></button>
-                <button type="button" class="tecla tecla-num" data-tecla="3" aria-label="3"><span class="digito">3</span><span class="braille">⠉</span></button>
-                <button type="button" class="tecla tecla-num" data-tecla="4" aria-label="4"><span class="digito">4</span><span class="braille">⠙</span></button>
-                <button type="button" class="tecla tecla-num" data-tecla="5" aria-label="5"><span class="digito">5</span><span class="braille">⠑</span></button>
-                <button type="button" class="tecla tecla-num" data-tecla="6" aria-label="6"><span class="digito">6</span><span class="braille">⠋</span></button>
-                <button type="button" class="tecla tecla-num" data-tecla="7" aria-label="7"><span class="digito">7</span><span class="braille">⠛</span></button>
-                <button type="button" class="tecla tecla-num" data-tecla="8" aria-label="8"><span class="digito">8</span><span class="braille">⠓</span></button>
-                <button type="button" class="tecla tecla-num" data-tecla="9" aria-label="9"><span class="digito">9</span><span class="braille">⠊</span></button>
-                <button type="button" class="tecla tecla-num tecla-zero" data-tecla="0" aria-label="0"><span class="digito">0</span><span class="braille">⠚</span></button>
-              </div>
+            <div class="urna-teclado">
+              <button type="button" class="tecla tecla-num" data-tecla="1" aria-label="1"><span class="digito">1</span><span class="braille" data-braille="#1"></span></button>
+              <button type="button" class="tecla tecla-num" data-tecla="2" aria-label="2"><span class="digito">2</span><span class="braille" data-braille="#2"></span></button>
+              <button type="button" class="tecla tecla-num" data-tecla="3" aria-label="3"><span class="digito">3</span><span class="braille" data-braille="#3"></span></button>
+              <button type="button" class="tecla tecla-num" data-tecla="4" aria-label="4"><span class="digito">4</span><span class="braille" data-braille="#4"></span></button>
+              <button type="button" class="tecla tecla-num tecla-5" data-tecla="5" aria-label="5"><span class="digito">5</span><span class="braille" data-braille="#5"></span></button>
+              <button type="button" class="tecla tecla-num" data-tecla="6" aria-label="6"><span class="digito">6</span><span class="braille" data-braille="#6"></span></button>
+              <button type="button" class="tecla tecla-num" data-tecla="7" aria-label="7"><span class="digito">7</span><span class="braille" data-braille="#7"></span></button>
+              <button type="button" class="tecla tecla-num" data-tecla="8" aria-label="8"><span class="digito">8</span><span class="braille" data-braille="#8"></span></button>
+              <button type="button" class="tecla tecla-num" data-tecla="9" aria-label="9"><span class="digito">9</span><span class="braille" data-braille="#9"></span></button>
+              <button type="button" class="tecla tecla-num" data-tecla="0" aria-label="0"><span class="digito">0</span><span class="braille" data-braille="#0"></span></button>
 
-              <div class="teclas-acao">
-                <button type="button" class="tecla tecla-branco" data-tecla="branco">BRANCO</button>
-                <button type="button" class="tecla tecla-corrige" data-tecla="corrige">CORRIGE</button>
-                <button type="button" class="tecla tecla-confirma" data-tecla="confirma">CONFIRMA</button>
-              </div>
+              <button type="button" class="tecla tecla-acao tecla-branco" data-tecla="branco"><span class="rotulo">BRANCO</span><span class="braille" data-braille="branco"></span></button>
+              <button type="button" class="tecla tecla-acao tecla-corrige" data-tecla="corrige"><span class="rotulo">CORRIGE</span><span class="braille" data-braille="corrige"></span></button>
+              <button type="button" class="tecla tecla-acao tecla-confirma" data-tecla="confirma"><span class="rotulo">CONFIRMA</span><span class="braille" data-braille="confirma"></span></button>
             </div>
           </div>
+
+          <div class="urna-pes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         </div>
       </div>
     </main>
@@ -95,11 +92,11 @@
       <div class="barra-botoes">
         <button type="button" class="papel" id="btn-cola">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 11h7M9 14.5h7M9 18h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Cola de candidatos
+          Colinha
         </button>
         <button type="button" class="papel papel-destaque" id="btn-nova" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95M19 4v4h-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Votar de novo
+          Nova simulação
         </button>
         <button type="button" class="papel" id="btn-resumo" hidden>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4 4L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -110,19 +107,19 @@
           <span class="rotulo-som">Som ligado</span>
         </button>
       </div>
-      <p class="aviso-legal">Simulador <strong>não oficial</strong>, sem vínculo com o TSE. Candidatos e partidos fictícios. <span class="so-teclado">Teclado: números, <kbd>Enter</kbd> confirma, <kbd>Backspace</kbd> corrige, <kbd>B</kbd> branco.</span></p>
+      <p class="aviso-legal">Simulador <strong>não oficial</strong>, sem vínculo com o TSE. Nenhum voto é registrado. <span class="so-teclado">Teclado: números, <kbd>Enter</kbd> confirma, <kbd>Backspace</kbd> corrige, <kbd>B</kbd> branco.</span></p>
     </footer>
   </div>
 
   <dialog id="dlg-cola" class="folha" aria-labelledby="titulo-cola">
     <div class="folha-papel">
       <header class="folha-topo">
-        <h2 id="titulo-cola">Colinha eleitoral</h2>
+        <h2 id="titulo-cola">Colinha · 2º turno</h2>
         <button type="button" class="folha-fechar" data-fechar aria-label="Fechar">×</button>
       </header>
       <div id="cola-conteudo" class="folha-conteudo"></div>
       <div class="folha-dicas">
-        <strong>Como votar:</strong> digite o número, confira foto, nome e partido e aperte
+        <strong>Como votar:</strong> digite os 2 números do candidato, confira foto, nome e partido e aperte
         <span class="mini mini-confirma">CONFIRMA</span>. Errou? Aperte <span class="mini mini-corrige">CORRIGE</span>.
         Para votar em branco, com o campo vazio, aperte <span class="mini mini-branco">BRANCO</span>.
       </div>
@@ -138,7 +135,7 @@
       <div id="resumo-conteudo" class="folha-conteudo"></div>
       <p class="folha-nota">Na urna de verdade o voto é secreto: nenhum comprovante com o seu voto é impresso ou exibido.</p>
       <div class="folha-acoes">
-        <button type="button" class="papel papel-destaque" data-nova>Votar de novo</button>
+        <button type="button" class="papel papel-destaque" data-nova>Nova simulação</button>
         <button type="button" class="papel" data-fechar>Fechar</button>
       </div>
     </div>

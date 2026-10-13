@@ -26,7 +26,8 @@ seção eleitoral, com a fila de eleitores esperando e os mesários ao fundo.
   seria uma enquete, proibida no período eleitoral (Resolução TSE nº 23.600/2019).
 - **Colinha** com os dois candidatos e **resumo** do voto no final da simulação.
 - **Cenário em 2D**: ilustração de uma sala de aula de escola pública (quadro-negro com "Eleições 2026 ·
-  2º turno", janelas, mural, porta com o número da seção), fila de eleitores e mesa receptora.
+  2º turno", janelas, mural, porta com o número da seção), fila de eleitores e mesa receptora. A urna fica
+  sobre uma mesa vista em primeira pessoa, que vai até a borda de baixo da tela.
 - Funciona no computador e no celular; a urna aparece sempre inteira (no celular em pé ela ocupa a largura da
   tela, e deitado fica maior).
 - Teclado físico: números, <kbd>Enter</kbd> = CONFIRMA, <kbd>Backspace</kbd>/<kbd>Esc</kbd> = CORRIGE, <kbd>B</kbd> = BRANCO.
@@ -60,7 +61,7 @@ js/votometro.js     votômetro (contagem salva só no navegador)
 js/som.js           sons da urna
 img/urna.webp       foto da urna (com a tela limpa)
 img/sala.webp       cenário: sala de aula com a fila de eleitores
-ferramentas/        gerador do cenário (gerar_sala.py)
+ferramentas/        geradores do cenário (gerar_sala.py) e do tampo da mesa (gerar_mesa.py)
 img/candidatos/     fotos oficiais dos candidatos
 som/                som do fim da votação
 fontes/             Liberation Sans (mesmas medidas do Arial usado na tela da urna)
